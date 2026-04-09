@@ -1,7 +1,16 @@
-[build]
-  command = "pnpm install && pnpm build"
-  publish = "dist/public"
+# netlify.toml - إعدادات البناء والنشر لمشروع Trustera
 
+[build]
+  # أمر البناء: تثبيت الحزم ثم بناء الواجهة + السيرفر
+  command = "pnpm install && pnpm build"
+  
+  # مجلد النشر: Vite + esbuild يخرج كل الملفات هنا
+  publish = "dist"
+
+  # متغيرات البيئة (عدل حسب API الخاص بك)
+  environment = { VITE_API_URL = "https://your-api-url" }
+
+# إعادة توجيه كل الطلبات إلى index.html لدعم SPA
 [[redirects]]
   from = "/*"
   to = "/index.html"
