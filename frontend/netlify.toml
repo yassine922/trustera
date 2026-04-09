@@ -1,7 +1,7 @@
 [build]
-  command = "cd frontend && pnpm install --no-frozen-lockfile && pnpm run build"
-  publish = "frontend/dist"
-  environment = { VITE_API_URL = "https://your-api-url" }
+  base = "frontend"
+  publish = "dist/public"
+  command = "pnpm install && pnpm run build"
 
 [[redirects]]
   from = "/*"

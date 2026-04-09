@@ -1,21 +1,26 @@
 <!doctype html>
 <html lang="en">
 
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>Trustera Project Split</title>
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+  <title>Trustera Project Split</title>
+</head>
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-    <script
-      type="module"
-      src="%VITE_ANALYTICS_ENDPOINT%/umami"
-      data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
-  </body>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+
+  <!-- Umami Analytics (load only if env variables exist) -->
+  <script type="module">
+    if (import.meta.env.VITE_ANALYTICS_ENDPOINT && import.meta.env.VITE_ANALYTICS_WEBSITE_ID) {
+      const s = document.createElement('script');
+      s.type = 'module';
+      s.src = `${import.meta.env.VITE_ANALYTICS_ENDPOINT}/umami.js`;
+      s.setAttribute('data-website-id', import.meta.env.VITE_ANALYTICS_WEBSITE_ID);
+      document.body.appendChild(s);
+    }
+  </script>
+</body>
 
 </html>
