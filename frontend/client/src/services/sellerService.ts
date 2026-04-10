@@ -1,5 +1,20 @@
 const API_URL = import.meta.env.VITE_API_URL || '';
 
+export interface SellerProfile {
+  id: string;
+  storeName: string;
+  fullName: string;
+  phone: string;
+  email: string;
+  category: string;
+  rating?: number;
+  reviewCount?: number;
+  totalSales?: number;
+  joinDate?: string;
+  avatar?: string;
+  verified?: boolean;
+}
+
 export interface SellerFormData {
   storeName: string;
   fullName: string;
@@ -11,7 +26,6 @@ export interface SellerFormData {
 
 export async function registerSeller(data: SellerFormData): Promise<{ success: boolean; message?: string }> {
   if (!API_URL) {
-    // محاكاة للتطوير
     await new Promise(r => setTimeout(r, 1000));
     if (!data.email.includes('@')) return { success: false, message: 'البريد الإلكتروني غير صحيح' };
     return { success: true };

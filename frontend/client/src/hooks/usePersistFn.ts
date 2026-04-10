@@ -8,4 +8,5 @@ function usePersistFn<T extends unknown[], R>(fn: Fn<T, R>): Fn<T, R> {
   return useCallback((...args: T) => fnRef.current(...args), [])
 }
 
+export { usePersistFn }
 export default usePersistFn
