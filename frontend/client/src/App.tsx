@@ -1,42 +1,59 @@
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
-import ErrorBoundary from "./components/ErrorBoundary";
-import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
+import { AppProvider, useApp } from './contexts/AppContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { Toaster } from './components/ui/sonner';
+import { TooltipProvider } from './components/ui/tooltip';
+import ErrorBoundary from './components/ErrorBoundary';
+import Header from './components/layout/Header';
+import Sidebar from './components/layout/Sidebar';
+import RightPanel from './components/layout/RightPanel';
+import Toast from './components/shared/Toast';
+import Home from './pages/Home';
+import Categories from './pages/Categories';
+import ProductPage from './pages/Product';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import { OrderSuccess, Wishlist, Account, SellerRegister, NotFound } from './pages/OtherPages';
+import './index.css';
 
-
-function Router() {
+function AppContent() {
+  const { currentPage } = useApp();
+  const pages: Record<string, React.ReactNode> = {
+    'home': <Home />,
+    'categories': <Categories />,
+    'product': <ProductPage />,
+    'cart': <Cart />,
+    'checkout': <Checkout />,
+    'order-success': <OrderSuccess />,
+    'wishlist': <Wishlist />,
+    'account': <Account />,
+    'seller-register': <SellerRegister />,
+  };
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
+    <div>
+      <Header />
+      <div id="app">
+        <div className="layout">
+          <Sidebar />
+          <main id="main">{pages[currentPage] || <NotFound />}</main>
+          <RightPanel />
+        </div>
+      </div>
+      <Toast />
+    </div>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
-function App() {
+export default function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+      <ThemeProvider defaultTheme="light">
+        <AppProvider>
+          <TooltipProvider>
+            <Toaster />
+            <AppContent />
+          </TooltipProvider>
+        </AppProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
 }
-
-export default App;
