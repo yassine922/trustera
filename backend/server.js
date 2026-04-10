@@ -2,36 +2,29 @@
 
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
 const app = express();
 
+// ===== الاتصال بـ MongoDB =====
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('✅ MongoDB متصل'))
+    .catch(err => console.error('❌ خطأ في الاتصال:', err));
+
 // ===== Middleware =====
 app.use(cors());
 app.use(express.json());
+
 // ===== خدمة الملفات الثابتة =====
 app.use(express.static('frontend'));
+
 // ===== المسارات =====
-
-// مسارات المصادقة
-const authRoutes = require('./auth');
-app.use('/api/auth', authRoutes);
-
-// مسارات المنتجات
-const productRoutes = require('./products');
-app.use('/api/products', productRoutes);
-
-// مسارات الطلبات
-const orderRoutes = require('./orders');
-app.use('/api/orders', orderRoutes);
-
-// مسارات النقاط
-const pointsRoutes = require('./points');
-app.use('/api/points', pointsRoutes);
-
-// مسارات الدفع
-const paymentRoutes = require('./payments');
-app.use('/api/payments', paymentRoutes);
+app.use('/api/auth', require('./auth'));
+app.use('/api/products', require('./products'));
+app.use('/api/orders', require('./orders'));
+app.use('/api/points', require('./points'));
+app.use('/api/payments', require('./payments'));
 
 // ===== معالج الأخطاء =====
 app.use((err, req, res, next) => {
@@ -46,5 +39,5 @@ app.use((err, req, res, next) => {
 // ===== بدء الخادم =====
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`الخادم يعمل على المنفذ ${PORT}`);
+    console.log(`🚀 الخادم يعمل على المنفذ ${PORT}`);
 });

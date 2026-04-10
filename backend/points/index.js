@@ -1,165 +1,71 @@
-// ===== API النقاط =====
-
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
+const mongoose = require('mongoose');
 
-// مسار ملف معاملات النقاط
-const pointsFile = path.join(__dirname, '../../database/points_transactions.json');
+const pointSchema = new mongoose.Schema({
+    userId: { type: String, required: true },
+    amount: { type: Number, required: true },
+    reason: { type: String, required: true },
+    type: { type: String, enum: ['add', 'use'], required: true },
+    createdAt: { type: Date, default: Date.now }
+});
 
-// قراءة معاملات النقاط من الملف
-function readPoints() {
+const Point = mongoose.model('Point', pointSchema);
+
+// جلب النقاط
+router.get('/', async (req, res) => {
     try {
-        const data = fs.readFileSync(pointsFile, 'utf8');
-        return JSON.parse(data);
+        const { userId } = req.query;
+        if (!userId) return res.status(400).json({ success: false, message: 'معرف المستخدم مطلوب' });
+
+        const transactions = await Point.find({ userId });
+        const totalPoints = transactions.reduce((total, t) => total + t.amount, 0);
+
+        res.json({ success: true, data: { totalPoints, transactions } });
     } catch (error) {
-        return [];
-    }
-}
-
-// حفظ معاملات النقاط في الملف
-function writePoints(points) {
-    fs.writeFileSync(pointsFile, JSON.stringify(points, null, 2));
-}
-
-// حساب إجمالي النقاط للمستخدم
-function getUserPoints(userId) {
-    const transactions = readPoints();
-    return transactions
-        .filter(t => t.userId === userId)
-        .reduce((total, t) => total + t.amount, 0);
-}
-
-// الحصول على النقاط
-router.get('/', (req, res) => {
-    try {
-        const userId = req.query.userId;
-        
-        if (!userId) {
-            return res.status(400).json({
-                success: false,
-                message: 'معرف المستخدم مطلوب'
-            });
-        }
-
-        const points = getUserPoints(userId);
-        const transactions = readPoints().filter(t => t.userId === userId);
-
-        res.json({
-            success: true,
-            data: {
-                totalPoints: points,
-                transactions: transactions
-            }
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'خطأ في جلب النقاط',
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: 'خطأ في جلب النقاط', error: error.message });
     }
 });
 
 // إضافة نقاط
-router.post('/add', (req, res) => {
+router.post('/add', async (req, res) => {
     try {
         const { userId, amount, reason } = req.body;
-
-        // التحقق من البيانات
         if (!userId || !amount || !reason) {
-            return res.status(400).json({
-                success: false,
-                message: 'جميع الحقول مطلوبة'
-            });
+            return res.status(400).json({ success: false, message: 'جميع الحقول مطلوبة' });
         }
+        const transaction = await Point.create({ userId, amount: parseInt(amount), reason, type: 'add' });
+        const transactions = await Point.find({ userId });
+        const totalPoints = transactions.reduce((total, t) => total + t.amount, 0);
 
-        const transactions = readPoints();
-
-        const newTransaction = {
-            id: Date.now().toString(),
-            userId,
-            amount: parseInt(amount),
-            reason,
-            type: 'add',
-            createdAt: new Date()
-        };
-
-        transactions.push(newTransaction);
-        writePoints(transactions);
-
-        const totalPoints = getUserPoints(userId);
-
-        res.status(201).json({
-            success: true,
-            message: 'تم إضافة النقاط بنجاح',
-            data: {
-                transaction: newTransaction,
-                totalPoints: totalPoints
-            }
-        });
+        res.status(201).json({ success: true, message: 'تم إضافة النقاط بنجاح', data: { transaction, totalPoints } });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'خطأ في إضافة النقاط',
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: 'خطأ في إضافة النقاط', error: error.message });
     }
 });
 
-// استخدام النقاط
-router.post('/use', (req, res) => {
+// استخدام نقاط
+router.post('/use', async (req, res) => {
     try {
         const { userId, amount, reason } = req.body;
-
-        // التحقق من البيانات
         if (!userId || !amount || !reason) {
-            return res.status(400).json({
-                success: false,
-                message: 'جميع الحقول مطلوبة'
-            });
+            return res.status(400).json({ success: false, message: 'جميع الحقول مطلوبة' });
         }
 
-        const currentPoints = getUserPoints(userId);
+        const transactions = await Point.find({ userId });
+        const currentPoints = transactions.reduce((total, t) => total + t.amount, 0);
 
         if (currentPoints < amount) {
-            return res.status(400).json({
-                success: false,
-                message: 'النقاط المتاحة غير كافية'
-            });
+            return res.status(400).json({ success: false, message: 'النقاط المتاحة غير كافية' });
         }
 
-        const transactions = readPoints();
+        const transaction = await Point.create({ userId, amount: -parseInt(amount), reason, type: 'use' });
+        const updatedTransactions = await Point.find({ userId });
+        const totalPoints = updatedTransactions.reduce((total, t) => total + t.amount, 0);
 
-        const newTransaction = {
-            id: Date.now().toString(),
-            userId,
-            amount: -parseInt(amount),
-            reason,
-            type: 'use',
-            createdAt: new Date()
-        };
-
-        transactions.push(newTransaction);
-        writePoints(transactions);
-
-        const totalPoints = getUserPoints(userId);
-
-        res.status(201).json({
-            success: true,
-            message: 'تم استخدام النقاط بنجاح',
-            data: {
-                transaction: newTransaction,
-                totalPoints: totalPoints
-            }
-        });
+        res.status(201).json({ success: true, message: 'تم استخدام النقاط بنجاح', data: { transaction, totalPoints } });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'خطأ في استخدام النقاط',
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: 'خطأ في استخدام النقاط', error: error.message });
     }
 });
 

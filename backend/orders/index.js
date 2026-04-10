@@ -1,179 +1,78 @@
-// ===== API الطلبات =====
-
 const express = require('express');
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
+const mongoose = require('mongoose');
 
-// مسار ملف الطلبات
-const ordersFile = path.join(__dirname, '../../database/orders.json');
+const orderSchema = new mongoose.Schema({
+    buyerId: { type: String, required: true },
+    items: { type: Array, required: true },
+    totalAmount: { type: Number, required: true },
+    status: { type: String, default: 'pending' },
+    paymentMethod: { type: String, default: 'pending' },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
+});
 
-// قراءة الطلبات من الملف
-function readOrders() {
+const Order = mongoose.model('Order', orderSchema);
+
+// جلب جميع الطلبات
+router.get('/', async (req, res) => {
     try {
-        const data = fs.readFileSync(ordersFile, 'utf8');
-        return JSON.parse(data);
+        const orders = await Order.find();
+        res.json({ success: true, data: orders });
     } catch (error) {
-        return [];
-    }
-}
-
-// حفظ الطلبات في الملف
-function writeOrders(orders) {
-    fs.writeFileSync(ordersFile, JSON.stringify(orders, null, 2));
-}
-
-// الحصول على جميع الطلبات
-router.get('/', (req, res) => {
-    try {
-        const orders = readOrders();
-        res.json({
-            success: true,
-            data: orders
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'خطأ في جلب الطلبات',
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: 'خطأ في جلب الطلبات', error: error.message });
     }
 });
 
-// الحصول على طلب واحد
-router.get('/:id', (req, res) => {
+// جلب طلب واحد
+router.get('/:id', async (req, res) => {
     try {
-        const orders = readOrders();
-        const order = orders.find(o => o.id === req.params.id);
-
-        if (!order) {
-            return res.status(404).json({
-                success: false,
-                message: 'الطلب غير موجود'
-            });
-        }
-
-        res.json({
-            success: true,
-            data: order
-        });
+        const order = await Order.findById(req.params.id);
+        if (!order) return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
+        res.json({ success: true, data: order });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'خطأ في جلب الطلب',
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: 'خطأ في جلب الطلب', error: error.message });
     }
 });
 
-// إنشاء طلب جديد
-router.post('/', (req, res) => {
+// إنشاء طلب
+router.post('/', async (req, res) => {
     try {
         const { items, totalAmount, buyerId } = req.body;
-
-        // التحقق من البيانات
         if (!items || !totalAmount || !buyerId) {
-            return res.status(400).json({
-                success: false,
-                message: 'جميع الحقول مطلوبة'
-            });
+            return res.status(400).json({ success: false, message: 'جميع الحقول مطلوبة' });
         }
-
-        const orders = readOrders();
-
-        const newOrder = {
-            id: Date.now().toString(),
-            buyerId,
-            items,
-            totalAmount,
-            status: 'pending',
-            paymentMethod: 'pending',
-            createdAt: new Date(),
-            updatedAt: new Date()
-        };
-
-        orders.push(newOrder);
-        writeOrders(orders);
-
-        res.status(201).json({
-            success: true,
-            message: 'تم إنشاء الطلب بنجاح',
-            data: newOrder
-        });
+        const order = await Order.create({ buyerId, items, totalAmount });
+        res.status(201).json({ success: true, message: 'تم إنشاء الطلب بنجاح', data: order });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'خطأ في إنشاء الطلب',
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: 'خطأ في إنشاء الطلب', error: error.message });
     }
 });
 
-// تحديث حالة الطلب
-router.put('/:id', (req, res) => {
+// تحديث طلب
+router.put('/:id', async (req, res) => {
     try {
         const { status, paymentMethod } = req.body;
-        const orders = readOrders();
-        const orderIndex = orders.findIndex(o => o.id === req.params.id);
-
-        if (orderIndex === -1) {
-            return res.status(404).json({
-                success: false,
-                message: 'الطلب غير موجود'
-            });
-        }
-
-        orders[orderIndex] = {
-            ...orders[orderIndex],
-            status: status || orders[orderIndex].status,
-            paymentMethod: paymentMethod || orders[orderIndex].paymentMethod,
-            updatedAt: new Date()
-        };
-
-        writeOrders(orders);
-
-        res.json({
-            success: true,
-            message: 'تم تحديث الطلب بنجاح',
-            data: orders[orderIndex]
-        });
+        const order = await Order.findByIdAndUpdate(
+            req.params.id,
+            { status, paymentMethod, updatedAt: new Date() },
+            { new: true }
+        );
+        if (!order) return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
+        res.json({ success: true, message: 'تم تحديث الطلب بنجاح', data: order });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'خطأ في تحديث الطلب',
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: 'خطأ في تحديث الطلب', error: error.message });
     }
 });
 
 // حذف طلب
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
     try {
-        let orders = readOrders();
-        const orderIndex = orders.findIndex(o => o.id === req.params.id);
-
-        if (orderIndex === -1) {
-            return res.status(404).json({
-                success: false,
-                message: 'الطلب غير موجود'
-            });
-        }
-
-        const deletedOrder = orders[orderIndex];
-        orders = orders.filter(o => o.id !== req.params.id);
-        writeOrders(orders);
-
-        res.json({
-            success: true,
-            message: 'تم حذف الطلب بنجاح',
-            data: deletedOrder
-        });
+        const order = await Order.findByIdAndDelete(req.params.id);
+        if (!order) return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
+        res.json({ success: true, message: 'تم حذف الطلب بنجاح', data: order });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'خطأ في حذف الطلب',
-            error: error.message
-        });
+        res.status(500).json({ success: false, message: 'خطأ في حذف الطلب', error: error.message });
     }
 });
 

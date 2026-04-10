@@ -1,36 +1,25 @@
-// ===== API المصادقة =====
-
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const fs = require('fs');
-const path = require('path');
+const mongoose = require('mongoose');
 
-// مسار ملف المستخدمين
-const usersFile = path.join(__dirname, '../../database/users.json');
+// ===== موديل المستخدم =====
+const userSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+});
 
-// قراءة المستخدمين من الملف
-function readUsers() {
-    try {
-        const data = fs.readFileSync(usersFile, 'utf8');
-        return JSON.parse(data);
-    } catch (error) {
-        return [];
-    }
-}
+const User = mongoose.model('User', userSchema);
 
-// حفظ المستخدمين في الملف
-function writeUsers(users) {
-    fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
-}
-
-// التسجيل
+// ===== التسجيل =====
 router.post('/register', async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
 
-        // التحقق من البيانات
         if (!name || !email || !password || !role) {
             return res.status(400).json({
                 success: false,
@@ -38,10 +27,9 @@ router.post('/register', async (req, res) => {
             });
         }
 
-        const users = readUsers();
-
         // التحقق من وجود المستخدم
-        if (users.find(u => u.email === email)) {
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
             return res.status(400).json({
                 success: false,
                 message: 'البريد الإلكتروني موجود بالفعل'
@@ -52,23 +40,18 @@ router.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // إنشاء مستخدم جديد
-        const newUser = {
-            id: Date.now().toString(),
+        const newUser = await User.create({
             name,
             email,
             password: hashedPassword,
-            role,
-            createdAt: new Date()
-        };
-
-        users.push(newUser);
-        writeUsers(users);
+            role
+        });
 
         res.status(201).json({
             success: true,
             message: 'تم إنشاء الحساب بنجاح',
             user: {
-                id: newUser.id,
+                id: newUser._id,
                 name: newUser.name,
                 email: newUser.email,
                 role: newUser.role
@@ -83,12 +66,11 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// تسجيل الدخول
+// ===== تسجيل الدخول =====
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // التحقق من البيانات
         if (!email || !password) {
             return res.status(400).json({
                 success: false,
@@ -96,9 +78,7 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        const users = readUsers();
-        const user = users.find(u => u.email === email);
-
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -106,9 +86,7 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        // التحقق من كلمة المرور
         const isPasswordValid = await bcrypt.compare(password, user.password);
-
         if (!isPasswordValid) {
             return res.status(401).json({
                 success: false,
@@ -116,9 +94,8 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        // إنشاء التوكن
         const token = jwt.sign(
-            { id: user.id, email: user.email, role: user.role },
+            { id: user._id, email: user.email, role: user.role },
             process.env.JWT_SECRET || 'your-secret-key',
             { expiresIn: '7d' }
         );
@@ -128,7 +105,7 @@ router.post('/login', async (req, res) => {
             message: 'تم تسجيل الدخول بنجاح',
             token,
             user: {
-                id: user.id,
+                id: user._id,
                 name: user.name,
                 email: user.email,
                 role: user.role
