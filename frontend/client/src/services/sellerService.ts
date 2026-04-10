@@ -35,7 +35,7 @@ export async function registerSeller(data: SellerFormData): Promise<{ success: b
     return { success: true };
   }
   try {
-    const res = await fetch(`${API_URL}/api/sellers/register`, {
+    const res = await fetch(`${API_URL}/sellers/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
