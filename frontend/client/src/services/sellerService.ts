@@ -3,11 +3,15 @@ const API_URL = import.meta.env.VITE_API_URL || '';
 export interface SellerProfile {
   id: string;
   storeName: string;
+  name: string;
   fullName: string;
   phone: string;
   email: string;
   category: string;
-  rating?: number;
+  rating: number;
+  reviews: number;
+  sales: number;
+  responseRate: number;
   reviewCount?: number;
   totalSales?: number;
   joinDate?: string;
