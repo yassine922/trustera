@@ -1,12 +1,17 @@
 import { useApp } from '../../contexts/AppContext';
 
 export default function Sidebar() {
-  const { showPage, cartCount, wishCount } = useApp();
+  const { showPage, wishCount } = useApp();
+  
   return (
-    <aside style={{ width: '210px', flexShrink: 0, background: 'white', borderLeft: '1px solid #eef0f3', padding: '16px 0', position: 'sticky', top: '112px', height: 'calc(100vh - 112px)', overflowY: 'auto' }}>
-      <button onClick={() => showPage('seller-register')} style={{ width: 'calc(100% - 24px)', margin: '0 12px 10px', padding: '9px', background: '#1a7c2e', color: 'white', border: 'none', borderRadius: '10px', fontFamily: 'Cairo, sans-serif', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+    <aside className="w-52 flex-shrink-0 bg-white border-l border-gray-100 pt-4 sticky top-28 h-[calc(100vh-112px)] overflow-y-auto">
+      <button 
+        onClick={() => showPage('seller-register')} 
+        className="w-11/12 mx-auto mb-2.5 py-2 bg-primary text-white border-0 rounded-lg font-cairo text-sm font-bold cursor-pointer flex items-center justify-center gap-1.5 hover:bg-primary-dark transition"
+      >
         ➕ إضافة منتج
       </button>
+
       {[
         { icon: '🏠', label: 'الرئيسية', page: 'home', badge: null },
         { icon: '📦', label: 'الأقسام', page: 'categories', badge: null },
@@ -16,29 +21,42 @@ export default function Sidebar() {
         { icon: '💰', label: 'محفظتي', page: 'account', badge: null, extra: '12,500 دج' },
         { icon: '⚙️', label: 'الإعدادات', page: 'account', badge: null },
       ].map((item, i) => (
-        <div key={i} onClick={() => showPage(item.page as any)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', cursor: 'pointer', color: '#374151', fontSize: '13.5px', fontWeight: 600, borderRight: '3px solid transparent', transition: 'all 0.2s' }} className="sidebar-item">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span style={{ fontSize: '15px', width: '20px', textAlign: 'center' }}>{item.icon}</span>
+        <div 
+          key={i} 
+          onClick={() => showPage(item.page as any)} 
+          className="flex items-center justify-between px-4 py-2.5 cursor-pointer text-gray-700 text-sm font-semibold border-r-3 border-r-transparent transition-all hover:bg-primary-bg hover:text-primary hover:border-r-primary"
+        >
+          <div className="flex items-center gap-2.5">
+            <span className="text-base w-5 text-center">{item.icon}</span>
             {item.label}
           </div>
-          {item.extra && <span style={{ fontSize: '11px', color: '#1a7c2e', fontWeight: 700 }}>{item.extra}</span>}
-          {item.badge && (
-            <span style={{ background: item.badgeRed ? '#fee2e2' : '#edf7f0', color: item.badgeRed ? '#d32f2f' : '#1a7c2e', fontSize: '11px', fontWeight: 800, padding: '2px 7px', borderRadius: '99px' }}>{item.badge}</span>
-          )}
+          <div className="flex items-center gap-2">
+            {item.extra && <span className="text-xs text-primary font-bold">{item.extra}</span>}
+            {item.badge && (
+              <span className={`text-xs font-black px-1.5 py-0.5 rounded-full ${
+                item.badgeRed 
+                  ? 'bg-red-100 text-red-600' 
+                  : 'bg-primary-bg text-primary'
+              }`}>
+                {item.badge}
+              </span>
+            )}
+          </div>
         </div>
       ))}
 
-      <div style={{ height: '1px', background: '#eef0f3', margin: '8px 16px' }} />
+      <div className="h-px bg-gray-100 my-2 mx-4" />
 
-      <div style={{ margin: '12px 12px 0', padding: '14px', background: '#edf7f0', borderRadius: '10px', border: '1px solid #c8e6c9' }}>
-        <div style={{ fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>هل أنت بائع؟</div>
-        <p style={{ fontSize: '12px', color: '#374151', lineHeight: 1.5, marginBottom: '10px' }}>ابدأ البيع الآن ووصل لآلاف الزبائن</p>
-        <button onClick={() => showPage('seller-register')} style={{ width: '100%', padding: '8px', background: '#1a7c2e', color: 'white', border: 'none', borderRadius: '10px', fontFamily: 'Cairo, sans-serif', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
+      <div className="mx-3 mt-3 p-3.5 bg-primary-bg rounded-lg border border-green-200">
+        <div className="text-xs font-bold mb-1.5">هل أنت بائع؟</div>
+        <p className="text-xs text-gray-700 leading-relaxed mb-2.5">ابدأ البيع الآن ووصل لآلاف الزبائن</p>
+        <button 
+          onClick={() => showPage('seller-register')} 
+          className="w-full py-2 bg-primary text-white border-0 rounded-lg font-cairo text-sm font-bold cursor-pointer hover:bg-primary-dark transition"
+        >
           🏪 تسجيل كبائع
         </button>
       </div>
-
-      <style>{`.sidebar-item:hover { background: #edf7f0; color: #1a7c2e; border-right-color: #1a7c2e !important; }`}</style>
     </aside>
   );
 }

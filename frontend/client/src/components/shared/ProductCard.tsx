@@ -14,7 +14,7 @@ function Stars({ rating }: { rating: number }) {
   return (
     <span>
       {[1,2,3,4,5].map(i => (
-        <span key={i} style={{ color: i <= Math.floor(rating) ? '#f59e0b' : '#d1d5db', fontSize: '12px' }}>★</span>
+        <span key={i} className={`text-xs ${i <= Math.floor(rating) ? 'text-warning' : 'text-gray-300'}`}>★</span>
       ))}
     </span>
   );
@@ -32,99 +32,76 @@ export default function ProductCard({ product, idx = 0 }: { product: Product; id
   return (
     <div
       onClick={openProduct}
-      style={{
-        background: 'white', borderRadius: '14px', overflow: 'hidden',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.08)', transition: 'all 0.25s ease',
-        cursor: 'pointer', border: '1px solid #eef0f3',
-        animationDelay: `${idx * 0.05}s`,
-      }}
-      className="product-card"
+      className="bg-white rounded-lg overflow-hidden shadow-sm transition-all duration-250 cursor-pointer border border-gray-100 hover:shadow-lg hover:-translate-y-0.75 product-card"
+      style={{ animationDelay: `${idx * 0.05}s` }}
     >
       {/* صورة المنتج */}
-      <div style={{
-        position: 'relative', aspectRatio: '1', overflow: 'hidden',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: gradients[product.bg] || gradients['gradient-1'], fontSize: '64px',
-      }}>
+      <div 
+        className="relative aspect-square overflow-hidden flex items-center justify-center text-8xl"
+        style={{ background: gradients[product.bg] || gradients['gradient-1'] }}
+      >
         <span>{product.emoji}</span>
 
         {/* أزرار العمليات */}
-        <div className="card-actions" style={{
-          position: 'absolute', top: '8px', left: '8px',
-          display: 'flex', flexDirection: 'column', gap: '4px',
-          opacity: 0, transition: 'all 0.2s ease',
-        }}>
+        <div className="card-actions absolute top-2 left-2 flex flex-col gap-1 opacity-0 transition-all duration-200">
           <button
             onClick={e => { e.stopPropagation(); toggleWish(product); }}
-            style={{
-              width: '32px', height: '32px', borderRadius: '50%', background: 'white',
-              border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', fontSize: '14px', color: inWish ? '#d32f2f' : '#6b7280',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
-            }}
+            className="w-8 h-8 rounded-full bg-white border-0 flex items-center justify-center cursor-pointer text-sm shadow-md hover:scale-110 transition"
+            style={{ color: inWish ? '#d32f2f' : '#6b7280' }}
           >
             {inWish ? '❤️' : '🤍'}
           </button>
         </div>
 
         {/* الشارات */}
-        <div style={{ position: 'absolute', bottom: '8px', right: '8px', display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
-          {product.isNew && <span style={{ background: '#edf7f0', color: '#1a7c2e', padding: '3px 8px', borderRadius: '99px', fontSize: '11px', fontWeight: 700 }}>جديد</span>}
-          {product.isFeatured && <span style={{ background: '#fee2e2', color: '#d32f2f', padding: '3px 8px', borderRadius: '99px', fontSize: '11px', fontWeight: 700 }}>🔥 رائج</span>}
-          {product.isFast && <span style={{ background: '#dbeafe', color: '#0284c7', padding: '3px 8px', borderRadius: '99px', fontSize: '11px', fontWeight: 700 }}>⚡ سريع</span>}
-          {product.stock <= 5 && <span style={{ background: '#fef3c7', color: '#b45309', padding: '3px 8px', borderRadius: '99px', fontSize: '11px', fontWeight: 700 }}>آخر {product.stock}</span>}
+        <div className="absolute bottom-2 right-2 flex flex-col gap-1 items-end">
+          {product.isNew && <span className="bg-primary-bg text-primary px-2 py-0.5 rounded-full text-xs font-bold">جديد</span>}
+          {product.isFeatured && <span className="bg-red-100 text-danger px-2 py-0.5 rounded-full text-xs font-bold">🔥 رائج</span>}
+          {product.isFast && <span className="bg-blue-100 text-info px-2 py-0.5 rounded-full text-xs font-bold">⚡ سريع</span>}
+          {product.stock <= 5 && <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-xs font-bold">آخر {product.stock}</span>}
         </div>
 
         {product.discount && (
-          <div style={{ position: 'absolute', top: '8px', right: '8px', background: '#d32f2f', color: 'white', fontSize: '11px', fontWeight: 700, padding: '3px 7px', borderRadius: '99px' }}>
+          <div className="absolute top-2 right-2 bg-danger text-white text-xs font-bold px-1.75 py-0.75 rounded-full">
             -{product.discount}%
           </div>
         )}
       </div>
 
       {/* معلومات المنتج */}
-      <div style={{ padding: '12px 12px 14px' }}>
-        <div style={{ fontSize: '11px', color: '#1a7c2e', fontWeight: 600, marginBottom: '4px' }}>
+      <div className="px-3 py-3.5">
+        <div className="text-xs text-primary font-semibold mb-1">
           🏷️ {product.catLabel}
         </div>
-        <div style={{ fontSize: '13.5px', fontWeight: 700, marginBottom: '4px', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        <div className="text-sm font-bold mb-1 leading-tight line-clamp-2">
           {product.name}
         </div>
-        <div style={{ fontSize: '11.5px', color: '#6b7280', marginBottom: '6px' }}>
+        <div className="text-xs text-gray-500 mb-1.5">
           🏪 {product.seller}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '8px' }}>
+        <div className="flex items-center gap-1.25 mb-2">
           <Stars rating={product.rating} />
-          <span style={{ fontSize: '12px', fontWeight: 700 }}>{product.rating}</span>
-          <span style={{ fontSize: '11px', color: '#6b7280' }}>({product.reviews})</span>
+          <span className="text-xs font-bold">{product.rating}</span>
+          <span className="text-xs text-gray-500">({product.reviews})</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '16px', fontWeight: 900, color: '#145c22' }}>{formatPrice(product.price)}</span>
-          {product.oldPrice && <span style={{ fontSize: '12px', color: '#6b7280', textDecoration: 'line-through' }}>{formatPrice(product.oldPrice)}</span>}
-          {product.discount && <span style={{ fontSize: '11px', fontWeight: 700, color: '#d32f2f', background: '#fee2e2', padding: '2px 6px', borderRadius: '99px' }}>-{product.discount}%</span>}
+        <div className="flex items-baseline gap-2 flex-wrap">
+          <span className="text-lg font-black text-primary-dark">{formatPrice(product.price)}</span>
+          {product.oldPrice && <span className="text-xs text-gray-500 line-through">{formatPrice(product.oldPrice)}</span>}
+          {product.discount && <span className="text-xs font-bold text-danger bg-red-100 px-1.5 py-0.5 rounded-full">-{product.discount}%</span>}
         </div>
-        <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '3px' }}>
-          تم البيع: <span style={{ color: '#1a7c2e', fontWeight: 700 }}>{product.sold.toLocaleString()}</span> مرة
+        <div className="text-xs text-gray-500 mt-0.75">
+          تم البيع: <span className="text-primary font-bold">{product.sold.toLocaleString()}</span> مرة
         </div>
         <button
           onClick={e => { e.stopPropagation(); addToCart(product); }}
-          style={{
-            width: '100%', marginTop: '10px', padding: '8px',
-            background: '#edf7f0', color: '#1a7c2e', border: '1px solid #1a7c2e',
-            borderRadius: '7px', fontFamily: 'Cairo, sans-serif', fontSize: '13px',
-            fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', gap: '6px', transition: 'all 0.2s',
-          }}
-          className="add-btn"
+          className="w-full mt-2.5 py-2 bg-primary-bg text-primary border border-primary rounded-lg font-cairo text-sm font-bold cursor-pointer flex items-center justify-center gap-1.5 transition-all hover:bg-primary hover:text-white add-btn"
         >
           🛒 أضف للسلة
         </button>
       </div>
 
       <style>{`
-        .product-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.13) !important; transform: translateY(-3px); }
         .product-card:hover .card-actions { opacity: 1 !important; }
-        .add-btn:hover { background: #1a7c2e !important; color: white !important; }
       `}</style>
     </div>
   );

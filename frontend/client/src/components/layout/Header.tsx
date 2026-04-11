@@ -3,7 +3,7 @@ import { useApp } from '../../contexts/AppContext';
 import { PRODUCTS } from '../../data/products';
 
 export default function Header() {
-  const { showPage, cartCount, wishCount, showToast, setCurrentProduct, setCurrentCat, showPage: nav } = useApp();
+  const { showPage, cartCount, wishCount, showToast, setCurrentProduct, setCurrentCat } = useApp();
   const [searchVal, setSearchVal] = useState('');
   const [activePage, setActivePage] = useState('home');
 
@@ -16,15 +16,15 @@ export default function Header() {
   };
 
   return (
-    <header style={{ position: 'fixed', top: 0, right: 0, left: 0, zIndex: 900, background: '#145c22', boxShadow: '0 2px 12px rgba(0,0,0,0.18)' }}>
+    <header className="fixed top-0 right-0 left-0 z-900 bg-primary-dark shadow-lg">
       {/* الشريط العلوي */}
-      <div style={{ background: '#0f5120', padding: '6px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>
-        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          <a onClick={() => goTo('home')} style={{ color: 'rgba(255,255,255,0.8)', cursor: 'pointer', textDecoration: 'none' }}>🏠 الرئيسية</a>
-          <a onClick={() => goTo('seller-register')} style={{ color: 'rgba(255,255,255,0.8)', cursor: 'pointer', textDecoration: 'none' }}>🏪 بيع على ترسترا</a>
-          <a onClick={() => showToast('دعم 24/7 متاح قريباً', 'info')} style={{ color: 'rgba(255,255,255,0.8)', cursor: 'pointer', textDecoration: 'none' }}>🎧 المساعدة</a>
+      <div className="bg-primary-dark/80 px-6 py-1.5 flex items-center justify-between text-xs text-white/80">
+        <div className="flex gap-5 items-center">
+          <button onClick={() => goTo('home')} className="text-white/80 hover:text-white transition cursor-pointer">🏠 الرئيسية</button>
+          <button onClick={() => goTo('seller-register')} className="text-white/80 hover:text-white transition cursor-pointer">🏪 بيع على ترسترا</button>
+          <button onClick={() => showToast('دعم 24/7 متاح قريباً', 'info')} className="text-white/80 hover:text-white transition cursor-pointer">🎧 المساعدة</button>
         </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', fontSize: '12px' }}>
+        <div className="flex gap-3 items-center text-xs">
           <span>🛡️ تسوق آمن 100%</span>
           <span>🚚 توصيل سريع</span>
           <span>↩️ إرجاع مجاني</span>
@@ -32,16 +32,16 @@ export default function Header() {
       </div>
 
       {/* الشريط الرئيسي */}
-      <div style={{ padding: '10px 24px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <div className="px-6 py-2.5 flex items-center gap-4">
         {/* اللوغو */}
-        <div onClick={() => goTo('home')} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', flexShrink: 0 }}>
-          <div style={{ width: '38px', height: '38px', background: 'white', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', fontWeight: 900, color: '#145c22' }}>T</div>
-          <span style={{ fontSize: '22px', fontWeight: 900, color: 'white', letterSpacing: '-0.5px' }}>Trustera</span>
-        </div>
+        <button onClick={() => goTo('home')} className="flex items-center gap-2.5 cursor-pointer flex-shrink-0 hover:opacity-90 transition">
+          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-xl font-black text-primary-dark">T</div>
+          <span className="text-2xl font-black text-white tracking-tight">Trustera</span>
+        </button>
 
         {/* شريط البحث */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'white', borderRadius: '8px', overflow: 'hidden', maxWidth: '680px' }}>
-          <select style={{ padding: '0 12px', height: '42px', border: 'none', borderLeft: '1px solid #dde1e7', background: '#f4f6f8', fontFamily: 'Cairo, sans-serif', fontSize: '13px', cursor: 'pointer', fontWeight: 600 }}>
+        <div className="flex-1 flex items-center bg-white rounded-lg overflow-hidden max-w-2xl shadow-sm">
+          <select className="px-3 h-11 border-l border-gray-200 bg-gray-50 font-cairo text-sm cursor-pointer font-semibold focus:outline-none">
             <option>كل الأقسام</option>
             <option>إلكترونيات</option>
             <option>أزياء</option>
@@ -54,43 +54,43 @@ export default function Header() {
             value={searchVal}
             onChange={e => setSearchVal(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && performSearch()}
-            style={{ flex: 1, height: '42px', border: 'none', outline: 'none', padding: '0 14px', fontFamily: 'Cairo, sans-serif', fontSize: '14px' }}
+            className="flex-1 h-11 border-0 outline-none px-3.5 font-cairo text-sm"
             placeholder="ابحث عن منتج، بائع، أو تصنيفات..."
           />
-          <button onClick={performSearch} style={{ width: '48px', height: '42px', background: '#ff6b00', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '16px' }}>
+          <button onClick={performSearch} className="w-12 h-11 bg-accent border-0 cursor-pointer flex items-center justify-center text-white text-lg hover:bg-orange-600 transition">
             🔍
           </button>
         </div>
 
         {/* أزرار العمليات */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-          <button onClick={() => goTo('wishlist')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '6px 10px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'rgba(255,255,255,0.85)', borderRadius: '8px', position: 'relative', fontFamily: 'Cairo, sans-serif' }}>
-            <span style={{ fontSize: '18px' }}>❤️</span>
-            <span style={{ fontSize: '11px', fontWeight: 600 }}>المفضلة</span>
-            {wishCount > 0 && <span style={{ position: 'absolute', top: '2px', right: '4px', background: '#ff6b00', color: 'white', fontSize: '10px', fontWeight: 800, width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #145c22' }}>{wishCount}</span>}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <button onClick={() => goTo('wishlist')} className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 border-0 bg-transparent cursor-pointer text-white/85 rounded-lg relative font-cairo hover:bg-white/10 transition">
+            <span className="text-lg">❤️</span>
+            <span className="text-xs font-semibold">المفضلة</span>
+            {wishCount > 0 && <span className="absolute top-0.5 right-1 bg-accent text-white text-xs font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-primary-dark">{wishCount}</span>}
           </button>
-          <button onClick={() => goTo('cart')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '6px 10px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'rgba(255,255,255,0.85)', borderRadius: '8px', position: 'relative', fontFamily: 'Cairo, sans-serif' }}>
-            <span style={{ fontSize: '18px' }}>🛒</span>
-            <span style={{ fontSize: '11px', fontWeight: 600 }}>السلة</span>
-            {cartCount > 0 && <span style={{ position: 'absolute', top: '2px', right: '4px', background: '#ff6b00', color: 'white', fontSize: '10px', fontWeight: 800, width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #145c22' }}>{cartCount}</span>}
+          <button onClick={() => goTo('cart')} className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 border-0 bg-transparent cursor-pointer text-white/85 rounded-lg relative font-cairo hover:bg-white/10 transition">
+            <span className="text-lg">🛒</span>
+            <span className="text-xs font-semibold">السلة</span>
+            {cartCount > 0 && <span className="absolute top-0.5 right-1 bg-accent text-white text-xs font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-primary-dark">{cartCount}</span>}
           </button>
-          <button onClick={() => showToast('الإشعارات قريباً', 'info')} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', padding: '6px 10px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'rgba(255,255,255,0.85)', borderRadius: '8px', position: 'relative', fontFamily: 'Cairo, sans-serif' }}>
-            <span style={{ fontSize: '18px' }}>🔔</span>
-            <span style={{ fontSize: '11px', fontWeight: 600 }}>إشعارات</span>
-            <span style={{ position: 'absolute', top: '2px', right: '4px', background: '#d32f2f', color: 'white', fontSize: '10px', fontWeight: 800, width: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #145c22' }}>3</span>
+          <button onClick={() => showToast('الإشعارات قريباً', 'info')} className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 border-0 bg-transparent cursor-pointer text-white/85 rounded-lg relative font-cairo hover:bg-white/10 transition">
+            <span className="text-lg">🔔</span>
+            <span className="text-xs font-semibold">إشعارات</span>
+            <span className="absolute top-0.5 right-1 bg-red-600 text-white text-xs font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-primary-dark">3</span>
           </button>
-          <div onClick={() => goTo('account')} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 12px', background: 'rgba(255,255,255,0.12)', borderRadius: '8px', cursor: 'pointer', color: 'white' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#ff6b00', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 700 }}>أ</div>
-            <div style={{ fontSize: '12px', lineHeight: 1.4 }}>
-              <div style={{ fontWeight: 700, fontSize: '13px' }}>أحمد بن علي</div>
-              <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '11px' }}>ahmed@gmail.com</div>
+          <button onClick={() => goTo('account')} className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-lg cursor-pointer text-white hover:bg-white/20 transition">
+            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-sm font-bold">أ</div>
+            <div className="text-xs leading-tight">
+              <div className="font-bold text-sm">أحمد بن علي</div>
+              <div className="text-white/70 text-xs">ahmed@gmail.com</div>
             </div>
-          </div>
+          </button>
         </div>
       </div>
 
       {/* شريط التنقل */}
-      <nav style={{ background: '#1a7c2e', padding: '0 24px', display: 'flex', alignItems: 'center', overflowX: 'auto' }}>
+      <nav className="bg-primary px-6 flex items-center overflow-x-auto">
         {[
           { id: 'home', label: 'الرئيسية', icon: '🏠' },
           { id: 'categories', label: 'الأقسام', icon: '📦' },
@@ -99,33 +99,24 @@ export default function Header() {
           { id: 'account', label: 'رسائلي', icon: '💬' },
           { id: 'account', label: 'محفظتي', icon: '💰' },
         ].map((item, i) => (
-          <a
+          <button
             key={i}
             onClick={() => goTo(item.id as any)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '7px',
-              padding: '10px 14px', color: activePage === item.id ? 'white' : 'rgba(255,255,255,0.85)',
-              fontSize: '13px', fontWeight: 600, cursor: 'pointer',
-              borderBottom: activePage === item.id ? '3px solid white' : '3px solid transparent',
-              whiteSpace: 'nowrap', textDecoration: 'none', transition: 'all 0.2s',
-              background: activePage === item.id ? 'rgba(255,255,255,0.08)' : 'transparent',
-            }}
+            className={`flex items-center gap-1.5 px-3.5 py-2.5 text-sm font-semibold cursor-pointer border-b-3 whitespace-nowrap transition-all ${
+              activePage === item.id
+                ? 'text-white border-b-white bg-white/10'
+                : 'text-white/85 border-b-transparent hover:bg-white/5'
+            }`}
           >
             {item.icon} {item.label}
-          </a>
+          </button>
         ))}
-        <a
+        <button
           onClick={() => goTo('seller-register')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '7px',
-            padding: '10px 14px', color: '#ffb060', fontSize: '13px', fontWeight: 600,
-            cursor: 'pointer', borderBottom: '3px solid transparent',
-            whiteSpace: 'nowrap', textDecoration: 'none', marginRight: 'auto',
-            background: 'rgba(255,107,0,0.15)',
-          }}
+          className="flex items-center gap-1.5 px-3.5 py-2.5 text-accent text-sm font-semibold cursor-pointer border-b-3 border-b-transparent whitespace-nowrap ml-auto hover:bg-orange-500/15 transition"
         >
           🏪 سجّل كبائع
-        </a>
+        </button>
       </nav>
     </header>
   );

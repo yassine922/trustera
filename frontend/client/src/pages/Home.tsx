@@ -21,11 +21,11 @@ function Countdown() {
     return () => clearInterval(id);
   }, []);
   return (
-    <div style={{ display: 'flex', gap: '8px' }}>
+    <div className="flex gap-2">
       {[{ val: time.h, label: 'ساعة' }, { val: time.m, label: 'دقيقة' }, { val: time.s, label: 'ثانية' }].map((u, i) => (
-        <div key={i} style={{ background: 'rgba(255,255,255,0.15)', borderRadius: '8px', padding: '6px 10px', textAlign: 'center', minWidth: '52px' }}>
-          <span style={{ fontSize: '20px', fontWeight: 900, display: 'block' }}>{u.val}</span>
-          <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)' }}>{u.label}</span>
+        <div key={i} className="bg-white/15 rounded-lg px-2.5 py-1.5 text-center min-w-13">
+          <span className="text-5xl font-black block">{u.val}</span>
+          <span className="text-xs text-white/70">{u.label}</span>
         </div>
       ))}
     </div>
@@ -33,99 +33,135 @@ function Countdown() {
 }
 
 export default function Home() {
-  const { showPage, showToast } = useApp();
+  const { showPage } = useApp();
   const featured = getFeatured();
   const newest = getNew();
 
   return (
     <div>
       {/* Hero Banner */}
-      <div style={{ background: 'linear-gradient(130deg,#0d4a1a 0%,#1a7c2e 50%,#2ea84a 100%)', padding: '40px 32px', color: 'white', position: 'relative', overflow: 'hidden', minHeight: '220px', display: 'flex', alignItems: 'center' }}>
-        <div style={{ position: 'absolute', top: '-60px', left: '-60px', width: '300px', height: '300px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
-        <div style={{ position: 'absolute', bottom: '-80px', right: '200px', width: '260px', height: '260px', borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
-        <div style={{ flex: 1, position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.15)', borderRadius: '99px', padding: '4px 12px', fontSize: '12px', fontWeight: 600, marginBottom: '14px' }}>
+      <div className="bg-gradient-to-r from-primary-dark via-primary to-primary-light px-8 py-10 text-white relative overflow-hidden min-h-56 flex items-center">
+        <div className="absolute top-0 left-0 w-72 h-72 rounded-full bg-white/5 -translate-y-1/3 -translate-x-1/3" />
+        <div className="absolute bottom-0 right-0 w-64 h-64 rounded-full bg-white/4 translate-y-1/3 translate-x-1/4" />
+        
+        <div className="flex-1 relative z-10">
+          <div className="inline-flex items-center gap-1.5 bg-white/15 rounded-full px-3 py-1 text-xs font-semibold mb-3.5">
             🎉 منصة التسوق الأولى في الجزائر
           </div>
-          <h1 style={{ fontSize: '32px', fontWeight: 900, lineHeight: 1.25, marginBottom: '10px' }}>
-            تسوّق بثقة،<br /><span style={{ color: '#86efac' }}>بيع بسهولة</span>
+          <h1 className="text-4xl font-black leading-tight mb-2.5">
+            تسوّق بثقة،<br /><span className="text-green-300">بيع بسهولة</span>
           </h1>
-          <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.8)', marginBottom: '22px', maxWidth: '400px' }}>
+          <p className="text-sm text-white/80 mb-5.5 max-w-96">
             اكتشف آلاف المنتجات من بائعين موثوقين في الجزائر. جودة مضمونة وتوصيل سريع.
           </p>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button onClick={() => showPage('categories')} style={{ padding: '11px 28px', background: 'white', color: '#145c22', border: 'none', borderRadius: '8px', fontFamily: 'Cairo, sans-serif', fontSize: '14px', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s' }}>
+          <div className="flex gap-3">
+            <button 
+              onClick={() => showPage('categories')} 
+              className="px-7 py-2.75 bg-white text-primary-dark border-0 rounded-lg font-cairo text-sm font-black cursor-pointer transition-all hover:shadow-lg"
+            >
               🛍️ تسوق الآن
             </button>
-            <button onClick={() => showPage('seller-register')} style={{ padding: '11px 28px', background: 'rgba(255,255,255,0.15)', color: 'white', border: '2px solid rgba(255,255,255,0.35)', borderRadius: '8px', fontFamily: 'Cairo, sans-serif', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>
+            <button 
+              onClick={() => showPage('seller-register')} 
+              className="px-7 py-2.75 bg-white/15 text-white border-2 border-white/35 rounded-lg font-cairo text-sm font-bold cursor-pointer hover:bg-white/25 transition"
+            >
               🏪 ابدأ البيع
             </button>
           </div>
         </div>
-        <div style={{ width: '380px', flexShrink: 0, position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.12)', border: '3px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '90px', animation: 'float 3s ease-in-out infinite' }}>
+
+        <div className="w-96 flex-shrink-0 relative z-10 flex items-center justify-center">
+          <div className="w-52 h-52 rounded-full bg-white/10 border-4 border-white/20 flex items-center justify-center text-9xl animate-bounce">
             🛍️
           </div>
         </div>
+
         {/* Trust badges */}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+        <div className="absolute bottom-0 left-0 right-0 flex bg-black/20 border-t border-white/10">
           {[
             { icon: '🛡️', title: 'تسوق آمن 100%', sub: 'حماية كاملة لبياناتك' },
             { icon: '🚚', title: 'توصيل سريع', sub: 'خلال 2-4 أيام عمل' },
             { icon: '↩️', title: 'إرجاع مجاني', sub: 'خلال 14 يوم' },
             { icon: '🏆', title: 'ضمان الجودة', sub: 'منتجات موثوقة 100%' },
           ].map((b, i) => (
-            <div key={i} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 20px', borderLeft: i > 0 ? '1px solid rgba(255,255,255,0.1)' : 'none', color: 'rgba(255,255,255,0.85)', fontSize: '12px' }}>
-              <span style={{ fontSize: '18px' }}>{b.icon}</span>
-              <div><div style={{ fontWeight: 700 }}>{b.title}</div><div style={{ opacity: 0.7 }}>{b.sub}</div></div>
+            <div key={i} className="flex-1 flex items-center gap-2.5 px-5 py-3 border-l border-white/10 first:border-l-0 text-white/85 text-xs">
+              <span className="text-base">{b.icon}</span>
+              <div>
+                <div className="font-bold">{b.title}</div>
+                <div className="opacity-70">{b.sub}</div>
+              </div>
             </div>
           ))}
         </div>
       </div>
 
       {/* قسم المنتجات الرائجة */}
-      <div style={{ padding: '24px 24px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <div style={{ fontSize: '17px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div className="px-6 pt-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-lg font-black flex items-center gap-2">
             🔥 المنتجات الرائجة
           </div>
-          <a onClick={() => showPage('categories')} style={{ fontSize: '13px', color: '#1a7c2e', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <button 
+            onClick={() => showPage('categories')} 
+            className="text-sm text-primary font-semibold cursor-pointer flex items-center gap-1 hover:underline"
+          >
             عرض الكل ◀
-          </a>
+          </button>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: '14px' }}>
+        <div className="grid grid-cols-auto-fill gap-3.5">
           {featured.map((p, i) => <ProductCard key={p.id} product={p} idx={i} />)}
         </div>
       </div>
 
       {/* بانر العروض */}
-      <div style={{ margin: '24px 24px 0', background: 'linear-gradient(130deg,#7c3aed,#4f46e5)', borderRadius: '14px', padding: '20px 28px', display: 'flex', alignItems: 'center', gap: '16px', color: 'white' }}>
-        <span style={{ fontSize: '48px' }}>⚡</span>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: '20px', fontWeight: 900, marginBottom: '4px' }}>عروض اليوم الحصرية</div>
-          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.8)' }}>تنتهي خلال:</div>
-          <div style={{ marginTop: '8px' }}><Countdown /></div>
+      <div className="mx-6 mt-6 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg p-7 flex items-center gap-4 text-white">
+        <span className="text-6xl">⚡</span>
+        <div className="flex-1">
+          <div className="text-2xl font-black mb-1">عروض اليوم الحصرية</div>
+          <div className="text-sm text-white/80">تنتهي خلال:</div>
+          <div className="mt-2"><Countdown /></div>
         </div>
-        <button onClick={() => showPage('categories')} style={{ padding: '10px 24px', background: 'white', color: '#4f46e5', border: 'none', borderRadius: '8px', fontFamily: 'Cairo, sans-serif', fontSize: '14px', fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+        <button 
+          onClick={() => showPage('categories')} 
+          className="px-6 py-2.5 bg-white text-indigo-600 border-0 rounded-lg font-cairo text-sm font-black cursor-pointer hover:shadow-lg transition whitespace-nowrap"
+        >
           🏷️ تصفح العروض
         </button>
       </div>
 
       {/* المنتجات الجديدة */}
-      <div style={{ padding: '24px 24px 32px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <div style={{ fontSize: '17px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ background: '#1a7c2e', color: 'white', fontSize: '11px', padding: '2px 8px', borderRadius: '99px', fontWeight: 700 }}>NEW</span>
+      <div className="px-6 py-8">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-lg font-black flex items-center gap-2">
+            <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full font-bold">NEW</span>
             منتجات جديدة
           </div>
-          <a onClick={() => showPage('categories')} style={{ fontSize: '13px', color: '#1a7c2e', fontWeight: 600, cursor: 'pointer' }}>عرض الكل ◀</a>
+          <button 
+            onClick={() => showPage('categories')} 
+            className="text-sm text-primary font-semibold cursor-pointer hover:underline"
+          >
+            عرض الكل ◀
+          </button>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(190px,1fr))', gap: '14px' }}>
+        <div className="grid grid-cols-auto-fill gap-3.5">
           {newest.map((p, i) => <ProductCard key={p.id} product={p} idx={i} />)}
         </div>
       </div>
 
-      <style>{`@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }`}</style>
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        .animate-bounce {
+          animation: float 3s ease-in-out infinite;
+        }
+        .grid-cols-auto-fill {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          gap: 1rem;
+        }
+      `}</style>
     </div>
   );
 }
