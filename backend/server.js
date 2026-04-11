@@ -20,11 +20,11 @@ app.use(express.json());
 app.use(express.static('frontend'));
 
 // ===== المسارات =====
-app.use('/api/auth', require('./auth'));
-app.use('/api/products', require('./products'));
-app.use('/api/orders', require('./orders'));
-app.use('/api/points', require('./points'));
-app.use('/api/payments', require('./payments'));
+app.use('/api/auth', require('./auth/index'));
+app.use('/api/products', require('./products/index'));
+app.use('/api/orders', require('./orders/index'));
+app.use('/api/points', require('./points/index'));
+app.use('/api/payments', require('./payments/index'));
 
 // ===== معالج الأخطاء =====
 app.use((err, req, res, next) => {
