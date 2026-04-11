@@ -1,9 +1,11 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { Product } from '../data/products';
 
-export type Page = 'home' | 'categories' | 'product' | 'cart' | 'checkout' | 'order-success' | 'wishlist' | 'account' | 'seller-register';
+export type Page = 'home' | 'categories' | 'product' | 'cart' | 'checkout' | 'order-success' | 'wishlist' | 'account' | 'seller-register' | 'login' | 'seller-dashboard' | 'manager-dashboard';
 
 interface CartItem extends Product { qty: number; }
+
+export interface AuthUser { id: string; name: string; email: string; role: string; }
 
 interface AppState {
   currentPage: Page;
@@ -14,6 +16,8 @@ interface AppState {
   orderNum: string | null;
   searchQuery: string;
   toast: { msg: string; type: string; icon?: string } | null;
+  user: AuthUser | null;
+  token: string | null;
 }
 
 interface AppContextType extends AppState {
@@ -31,9 +35,15 @@ interface AppContextType extends AppState {
   cartCount: number;
   cartTotal: number;
   wishCount: number;
+  setUser: (user: AuthUser, token: string) => void;
+  logout: () => void;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
+
+// Load persisted auth
+const savedUser = (() => { try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; } })();
+const savedToken = localStorage.getItem('token');
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>({
@@ -45,9 +55,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     orderNum: null,
     searchQuery: '',
     toast: null,
+    user: savedUser,
+    token: savedToken,
   });
 
   const showPage = (page: Page) => setState(s => ({ ...s, currentPage: page }));
+
+  const setUser = (user: AuthUser, token: string) => {
+    setState(s => ({ ...s, user, token }));
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setState(s => ({ ...s, user: null, token: null, currentPage: 'home' }));
+  };
 
   const addToCart = (product: Product) => {
     setState(s => {
@@ -99,6 +121,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...state, showPage, addToCart, removeFromCart, updateQty, clearCart,
       toggleWish, setCurrentProduct, setCurrentCat, setSearchQuery,
       placeOrder, showToast, cartCount, cartTotal, wishCount,
+      setUser, logout,
     }}>
       {children}
     </AppContext.Provider>

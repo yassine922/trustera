@@ -12,11 +12,23 @@ import Categories from './pages/Categories';
 import ProductPage from './pages/Product';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
+import Login from './pages/Login';
+import SellerDashboard from './pages/SellerDashboard';
+import ManagerDashboard from './pages/ManagerDashboard';
 import { OrderSuccess, Wishlist, Account, SellerRegister, NotFound } from './pages/OtherPages';
 import './index.css';
 
+// Pages that use full layout (header + sidebar)
+const LAYOUT_PAGES = ['home', 'categories', 'product', 'cart', 'checkout', 'order-success', 'wishlist', 'account', 'seller-register'];
+
 function AppContent() {
   const { currentPage } = useApp();
+
+  // Full-screen pages (no layout)
+  if (currentPage === 'login') return <Login />;
+  if (currentPage === 'seller-dashboard') return <SellerDashboard />;
+  if (currentPage === 'manager-dashboard') return <ManagerDashboard />;
+
   const pages: Record<string, React.ReactNode> = {
     'home': <Home />,
     'categories': <Categories />,
@@ -28,6 +40,7 @@ function AppContent() {
     'account': <Account />,
     'seller-register': <SellerRegister />,
   };
+
   return (
     <div>
       <Header />
