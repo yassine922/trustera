@@ -121,3 +121,44 @@ router.post('/login', async (req, res) => {
 });
 
 module.exports = router;
+// ===== Middleware التحقق من التوكن =====
+function authMiddleware(req, res, next) {
+    const auth = req.headers.authorization;
+    if (!auth || !auth.startsWith('Bearer ')) {
+        return res.status(401).json({ success: false, message: 'غير مصرح' });
+    }
+    try {
+        const decoded = require('jsonwebtoken').verify(
+            auth.split(' ')[1],
+            process.env.JWT_SECRET || 'your-secret-key'
+        );
+        req.user = decoded;
+        next();
+    } catch {
+        return res.status(401).json({ success: false, message: 'توكن غير صالح' });
+    }
+}
+
+// ===== جلب جميع المستخدمين (للمدير فقط) =====
+router.get('/users', authMiddleware, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'غير مصرح' });
+        }
+        const users = await User.find({}, { password: 0 });
+        res.json({ success: true, data: users });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'خطأ في جلب المستخدمين', error: error.message });
+    }
+});
+
+// ===== جلب بيانات المستخدم الحالي =====
+router.get('/me', authMiddleware, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id, { password: 0 });
+        if (!user) return res.status(404).json({ success: false, message: 'المستخدم غير موجود' });
+        res.json({ success: true, data: user });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'خطأ', error: error.message });
+    }
+});

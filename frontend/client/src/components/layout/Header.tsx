@@ -3,7 +3,7 @@ import { useApp } from '../../contexts/AppContext';
 import { PRODUCTS } from '../../data/products';
 
 export default function Header() {
-  const { showPage, cartCount, wishCount, showToast, setCurrentProduct, setCurrentCat } = useApp();
+  const { showPage, cartCount, wishCount, showToast, setCurrentCat, user, logout } = useApp();
   const [searchVal, setSearchVal] = useState('');
   const [activePage, setActivePage] = useState('home');
 
@@ -15,13 +15,25 @@ export default function Header() {
     showPage('categories');
   };
 
+  const handleUserClick = () => {
+    if (!user) { showPage('login'); return; }
+    if (user.role === 'admin') showPage('manager-dashboard');
+    else if (user.role === 'seller') showPage('seller-dashboard');
+    else showPage('account');
+  };
+
+  const handleLogout = () => {
+    logout();
+    showToast('تم تسجيل الخروج', 'info');
+  };
+
   return (
     <header className="fixed top-0 right-0 left-0 z-900 bg-primary-dark shadow-lg">
       {/* الشريط العلوي */}
       <div className="bg-primary-dark/80 px-6 py-1.5 flex items-center justify-between text-xs text-white/80">
         <div className="flex gap-5 items-center">
           <button onClick={() => goTo('home')} className="text-white/80 hover:text-white transition cursor-pointer">🏠 الرئيسية</button>
-          <button onClick={() => goTo('seller-register')} className="text-white/80 hover:text-white transition cursor-pointer">🏪 بيع على ترسترا</button>
+          <button onClick={() => user?.role === 'seller' ? goTo('seller-dashboard') : goTo('seller-register')} className="text-white/80 hover:text-white transition cursor-pointer">🏪 بيع على ترسترا</button>
           <button onClick={() => showToast('دعم 24/7 متاح قريباً', 'info')} className="text-white/80 hover:text-white transition cursor-pointer">🎧 المساعدة</button>
         </div>
         <div className="flex gap-3 items-center text-xs">
@@ -77,15 +89,31 @@ export default function Header() {
           <button onClick={() => showToast('الإشعارات قريباً', 'info')} className="flex flex-col items-center gap-0.5 px-2.5 py-1.5 border-0 bg-transparent cursor-pointer text-white/85 rounded-lg relative font-cairo hover:bg-white/10 transition">
             <span className="text-lg">🔔</span>
             <span className="text-xs font-semibold">إشعارات</span>
-            <span className="absolute top-0.5 right-1 bg-red-600 text-white text-xs font-black w-4.5 h-4.5 rounded-full flex items-center justify-center border-2 border-primary-dark">3</span>
           </button>
-          <button onClick={() => goTo('account')} className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-lg cursor-pointer text-white hover:bg-white/20 transition">
-            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-sm font-bold">أ</div>
-            <div className="text-xs leading-tight">
-              <div className="font-bold text-sm">أحمد بن علي</div>
-              <div className="text-white/70 text-xs">ahmed@gmail.com</div>
+
+          {/* زر المستخدم */}
+          {user ? (
+            <div className="flex items-center gap-1.5">
+              <button onClick={handleUserClick} className="flex items-center gap-2 px-3 py-1.5 bg-white/10 rounded-lg cursor-pointer text-white hover:bg-white/20 transition">
+                <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-sm font-bold">
+                  {user.name?.charAt(0) || 'م'}
+                </div>
+                <div className="text-xs leading-tight">
+                  <div className="font-bold text-sm">{user.name}</div>
+                  <div className="text-white/70 text-xs">
+                    {user.role === 'admin' ? '👑 مدير' : user.role === 'seller' ? '🏪 بائع' : '🛍️ زبون'}
+                  </div>
+                </div>
+              </button>
+              <button onClick={handleLogout} className="px-2 py-1.5 bg-red-500/20 text-white rounded-lg text-xs font-bold hover:bg-red-500/40 transition cursor-pointer border-0">
+                خروج
+              </button>
             </div>
-          </button>
+          ) : (
+            <button onClick={() => showPage('login')} className="flex items-center gap-2 px-4 py-2 bg-white text-primary-dark rounded-lg cursor-pointer font-cairo text-sm font-bold hover:bg-gray-100 transition border-0">
+              🔑 دخول / تسجيل
+            </button>
+          )}
         </div>
       </div>
 
@@ -96,7 +124,6 @@ export default function Header() {
           { id: 'categories', label: 'الأقسام', icon: '📦' },
           { id: 'account', label: 'طلباتي', icon: '📋' },
           { id: 'wishlist', label: 'المفضلة', icon: '❤️' },
-          { id: 'account', label: 'رسائلي', icon: '💬' },
           { id: 'account', label: 'محفظتي', icon: '💰' },
         ].map((item, i) => (
           <button
@@ -111,12 +138,22 @@ export default function Header() {
             {item.icon} {item.label}
           </button>
         ))}
-        <button
-          onClick={() => goTo('seller-register')}
-          className="flex items-center gap-1.5 px-3.5 py-2.5 text-accent text-sm font-semibold cursor-pointer border-b-3 border-b-transparent whitespace-nowrap ml-auto hover:bg-orange-500/15 transition"
-        >
-          🏪 سجّل كبائع
-        </button>
+        {/* زر البائع أو لوحة التحكم */}
+        {user?.role === 'seller' && (
+          <button onClick={() => goTo('seller-dashboard')} className="flex items-center gap-1.5 px-3.5 py-2.5 text-accent text-sm font-semibold cursor-pointer border-b-3 border-b-transparent whitespace-nowrap ml-auto hover:bg-orange-500/15 transition">
+            🏪 لوحة البائع
+          </button>
+        )}
+        {user?.role === 'admin' && (
+          <button onClick={() => goTo('manager-dashboard')} className="flex items-center gap-1.5 px-3.5 py-2.5 text-accent text-sm font-semibold cursor-pointer border-b-3 border-b-transparent whitespace-nowrap ml-auto hover:bg-orange-500/15 transition">
+            👑 لوحة المدير
+          </button>
+        )}
+        {!user?.role && (
+          <button onClick={() => goTo('seller-register')} className="flex items-center gap-1.5 px-3.5 py-2.5 text-accent text-sm font-semibold cursor-pointer border-b-3 border-b-transparent whitespace-nowrap ml-auto hover:bg-orange-500/15 transition">
+            🏪 سجّل كبائع
+          </button>
+        )}
       </nav>
     </header>
   );
