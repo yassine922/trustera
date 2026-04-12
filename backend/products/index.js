@@ -7,6 +7,10 @@ const productSchema = new mongoose.Schema({
     price: { type: Number, required: true },
     description: { type: String, required: true },
     sellerId: { type: String, required: true },
+    sellerName: { type: String, default: '' },
+    category: { type: String, default: 'other' },
+    image: { type: String, default: '' }, // base64 أو URL
+    stock: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });
@@ -37,11 +41,17 @@ router.get('/:id', async (req, res) => {
 // إضافة منتج
 router.post('/', async (req, res) => {
     try {
-        const { name, price, description, sellerId } = req.body;
+        const { name, price, description, sellerId, sellerName, category, image, stock } = req.body;
         if (!name || !price || !description || !sellerId) {
             return res.status(400).json({ success: false, message: 'جميع الحقول مطلوبة' });
         }
-        const product = await Product.create({ name, price, description, sellerId });
+        const product = await Product.create({
+            name, price, description, sellerId,
+            sellerName: sellerName || '',
+            category: category || 'other',
+            image: image || '',
+            stock: stock || 0,
+        });
         res.status(201).json({ success: true, message: 'تم إضافة المنتج بنجاح', data: product });
     } catch (error) {
         res.status(500).json({ success: false, message: 'خطأ في إضافة المنتج', error: error.message });
@@ -51,10 +61,10 @@ router.post('/', async (req, res) => {
 // تحديث منتج
 router.put('/:id', async (req, res) => {
     try {
-        const { name, price, description } = req.body;
+        const { name, price, description, category, image, stock } = req.body;
         const product = await Product.findByIdAndUpdate(
             req.params.id,
-            { name, price, description, updatedAt: new Date() },
+            { name, price, description, category, image, stock, updatedAt: new Date() },
             { new: true }
         );
         if (!product) return res.status(404).json({ success: false, message: 'المنتج غير موجود' });
