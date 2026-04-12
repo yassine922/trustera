@@ -23,14 +23,15 @@ interface AppState {
 interface AppContextType extends AppState {
   showPage: (page: Page) => void;
   addToCart: (product: Product) => void;
-  removeFromCart: (id: number) => void;
-  updateQty: (id: number, qty: number) => void;
+  removeFromCart: (id: string | number) => void;  // ✅ تغيير لـ string | number
+  updateQty: (id: string | number, qty: number) => void;  // ✅ تغيير لـ string | number
   clearCart: () => void;
+  setCart: (cart: CartItem[]) => void;  // ✅ إضافة جديدة
   toggleWish: (product: Product) => void;
   setCurrentProduct: (p: Product | null) => void;
   setCurrentCat: (cat: string) => void;
   setSearchQuery: (q: string) => void;
-  placeOrder: () => void;
+  placeOrder: (orderData?: any) => Promise<boolean>;  // ✅ تغيير لـ async
   showToast: (msg: string, type?: string, icon?: string) => void;
   cartCount: number;
   cartTotal: number;
@@ -42,13 +43,30 @@ interface AppContextType extends AppState {
 const AppContext = createContext<AppContextType | null>(null);
 
 // Load persisted auth
-const savedUser = (() => { try { return JSON.parse(localStorage.getItem('user') || 'null'); } catch { return null; } })();
+const savedUser = (() => { 
+  try { 
+    return JSON.parse(localStorage.getItem('user') || 'null'); 
+  } catch { 
+    return null; 
+  } 
+})();
+
 const savedToken = localStorage.getItem('token');
+
+// ✅ إضافة: تحميل السلة المحفوظة
+const loadSavedCart = (): CartItem[] => {
+  try {
+    const saved = localStorage.getItem('trustera_cart_v2');
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
+  }
+};
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>({
     currentPage: 'home',
-    cart: [],
+    cart: loadSavedCart(),  // ✅ تحميل السلة المحفوظة
     wishlist: [],
     currentProduct: null,
     currentCat: 'all',
@@ -62,6 +80,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const showPage = (page: Page) => setState(s => ({ ...s, currentPage: page }));
 
   const setUser = (user: AuthUser, token: string) => {
+    localStorage.setItem('user', JSON.stringify(user));
+    localStorage.setItem('token', token);
     setState(s => ({ ...s, user, token }));
   };
 
@@ -71,24 +91,53 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setState(s => ({ ...s, user: null, token: null, currentPage: 'home' }));
   };
 
+  // ✅ إضافة: setCart مباشر
+  const setCart = (cart: CartItem[]) => {
+    setState(s => ({ ...s, cart }));
+    localStorage.setItem('trustera_cart_v2', JSON.stringify(cart));
+  };
+
   const addToCart = (product: Product) => {
+    // ✅ إضافة: التحقق من وجود SKU
+    const productWithSku = {
+      ...product,
+      sku: product.sku || `TR-${String(product.id).padStart(3, '0')}-${product.category?.substring(0, 3).toUpperCase() || 'GEN'}`,
+      isReal: !!product.sku || typeof product.id === 'string'
+    };
+
     setState(s => {
       const exists = s.cart.find(i => i.id === product.id);
       const cart = exists
         ? s.cart.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i)
-        : [...s.cart, { ...product, qty: 1 }];
+        : [...s.cart, { ...productWithSku, qty: 1 }];
+      
+      // ✅ إضافة: حفظ تلقائي في localStorage
+      localStorage.setItem('trustera_cart_v2', JSON.stringify(cart));
+      
       return { ...s, cart };
     });
+    
     showToast('تمت الإضافة للسلة ✅', 'success');
   };
 
-  const removeFromCart = (id: number) =>
-    setState(s => ({ ...s, cart: s.cart.filter(i => i.id !== id) }));
+  const removeFromCart = (id: string | number) =>
+    setState(s => {
+      const cart = s.cart.filter(i => i.id !== id);
+      localStorage.setItem('trustera_cart_v2', JSON.stringify(cart));
+      return { ...s, cart };
+    });
 
-  const updateQty = (id: number, qty: number) =>
-    setState(s => ({ ...s, cart: s.cart.map(i => i.id === id ? { ...i, qty } : i) }));
+  const updateQty = (id: string | number, qty: number) =>
+    setState(s => {
+      const cart = s.cart.map(i => i.id === id ? { ...i, qty: Math.max(1, qty) } : i);
+      localStorage.setItem('trustera_cart_v2', JSON.stringify(cart));
+      return { ...s, cart };
+    });
 
-  const clearCart = () => setState(s => ({ ...s, cart: [] }));
+  const clearCart = () => {
+    setState(s => ({ ...s, cart: [] }));
+    localStorage.removeItem('trustera_cart_v2');
+  };
 
   const toggleWish = (product: Product) => {
     setState(s => {
@@ -102,9 +151,41 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setCurrentCat = (cat: string) => setState(s => ({ ...s, currentCat: cat }));
   const setSearchQuery = (q: string) => setState(s => ({ ...s, searchQuery: q }));
 
-  const placeOrder = () => {
-    const num = 'TRS-2025-' + Math.floor(Math.random() * 9000 + 1000);
-    setState(s => ({ ...s, orderNum: num, cart: [], currentPage: 'order-success' }));
+  // ✅ تغيير: placeOrder كاملة ومتقدمة
+  const placeOrder = async (orderData?: any): Promise<boolean> => {
+    try {
+      const num = 'TRS-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+      
+      const finalOrder = {
+        id: num,
+        date: new Date().toISOString(),
+        status: 'pending',
+        items: state.cart.map(item => ({
+          sku: item.sku,
+          name: item.name,
+          price: item.price,
+          qty: item.qty,
+          seller: item.seller
+        })),
+        total: state.cart.reduce((a, i) => a + i.price * i.qty, 0) + 400,
+        shipping: 400,
+        ...orderData
+      };
+
+      // ✅ حفظ في localStorage
+      const existingOrders = JSON.parse(localStorage.getItem('trustera_orders') || '[]');
+      existingOrders.push(finalOrder);
+      localStorage.setItem('trustera_orders', JSON.stringify(existingOrders));
+
+      // ✅ مسح السلة
+      setState(s => ({ ...s, orderNum: num, cart: [], currentPage: 'order-success' }));
+      localStorage.removeItem('trustera_cart_v2');
+      
+      return true;
+    } catch (error) {
+      showToast('حدث خطأ في إتمام الطلب', 'error');
+      return false;
+    }
   };
 
   const showToast = (msg: string, type = 'success', icon?: string) => {
@@ -118,10 +199,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider value={{
-      ...state, showPage, addToCart, removeFromCart, updateQty, clearCart,
-      toggleWish, setCurrentProduct, setCurrentCat, setSearchQuery,
-      placeOrder, showToast, cartCount, cartTotal, wishCount,
-      setUser, logout,
+      ...state, 
+      showPage, 
+      addToCart, 
+      removeFromCart, 
+      updateQty, 
+      clearCart,
+      setCart,  // ✅ إضافة جديدة
+      toggleWish, 
+      setCurrentProduct, 
+      setCurrentCat, 
+      setSearchQuery,
+      placeOrder,  // ✅ تغيير
+      showToast, 
+      cartCount, 
+      cartTotal, 
+      wishCount,
+      setUser, 
+      logout,
     }}>
       {children}
     </AppContext.Provider>
