@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap' );
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
   --primary: #1a7c2e;
@@ -23,36 +23,98 @@
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.13);
   --radius: 10px;
   --radius-lg: 14px;
-  --header-h: 112px;
+  
+  /* ===== متغيرات متجاوبة ===== */
+  --header-h: 70px; /* افتراضي للموبايل */
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+/* ===== TABLET ===== */
+@media (min-width: 768px) {
+  :root {
+    --header-h: 90px;
+  }
+}
+
+/* ===== DESKTOP ===== */
+@media (min-width: 1024px) {
+  :root {
+    --header-h: 112px;
+  }
+}
+
+/* ===== BASE STYLES ===== */
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box;
+}
+
+html { 
+  scroll-behavior: smooth;
+  font-size: 14px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* ===== MOBILE FONT SIZE ===== */
+@media (min-width: 768px) {
+  html { font-size: 15px; }
+}
+
+@media (min-width: 1024px) {
+  html { font-size: 16px; }
+}
 
 body {
   font-family: 'Cairo', sans-serif;
   background: var(--bg);
   color: var(--text-primary);
-  font-size: 14px;
   line-height: 1.5;
   direction: rtl;
+  overflow-x: hidden;
+  min-height: 100vh;
 }
 
+/* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: #c5cad3; border-radius: 10px; }
 
-button, input, select, textarea { font-family: 'Cairo', sans-serif; }
+/* ===== FORM ELEMENTS ===== */
+button, input, select, textarea { 
+  font-family: 'Cairo', sans-serif;
+  font-size: inherit;
+}
 
-#app { padding-top: var(--header-h); min-height: 100vh; }
+/* ===== LAYOUT RESPONSIVE ===== */
+#app { 
+  padding-top: var(--header-h); 
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
 
 .layout {
   display: flex;
+  flex-direction: column;
   min-height: calc(100vh - var(--header-h));
 }
 
-#main { flex: 1; min-width: 0; }
+/* ===== TABLET+ LAYOUT ===== */
+@media (min-width: 768px) {
+  .layout {
+    flex-direction: row;
+  }
+}
 
+#main { 
+  flex: 1; 
+  min-width: 0;
+  width: 100%;
+}
+
+/* ===== ANIMATIONS ===== */
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
@@ -63,7 +125,62 @@ button, input, select, textarea { font-family: 'Cairo', sans-serif; }
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* ===== FOCUS STATES ===== */
 input:focus, select:focus, textarea:focus {
   border-color: var(--primary) !important;
   box-shadow: 0 0 0 3px rgba(26,124,46,0.1);
+  outline: none;
+}
+
+/* ===== UTILITY CLASSES ===== */
+.container-responsive {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 12px;
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    max-width: 640px;
+    padding: 0 16px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-responsive {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    max-width: 1024px;
+    padding: 0 24px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container-responsive {
+    max-width: 1280px;
+  }
+}
+
+/* ===== MOBILE TOUCH OPTIMIZATION ===== */
+@media (hover: none) and (pointer: coarse) {
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  input, select, textarea {
+    font-size: 16px; /* يمنع zoom في iOS */
+  }
+}
+
+/* ===== SAFARI FIXES ===== */
+@supports (-webkit-touch-callout: none) {
+  body {
+    -webkit-font-smoothing: antialiased;
+  }
 }
