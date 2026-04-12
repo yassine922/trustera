@@ -63,23 +63,57 @@ interface ProductCardProps {
   idx?: number;
 }
 
+// ✅ إضافة: دالة لإنشاء SKU تلقائي
+const generateSKU = (product: Product): string => {
+  if (product.sku) return product.sku;
+  const catCode = product.category?.substring(0, 3).toUpperCase() || 'GEN';
+  const idStr = typeof product.id === 'number' 
+    ? String(product.id).padStart(3, '0') 
+    : String(product.id).replace(/\D/g, '').padStart(3, '0') || '000';
+  return `TR-${idStr}-${catCode}`;
+};
+
+// ✅ إضافة: دالة لتحديد إذا كان المنتج حقيقي
+const checkIsReal = (product: Product): boolean => {
+  // حقيقي إذا كان: له SKU مسبق، أو ID نصي، أو علامة isReal
+  return !!product.sku || typeof product.id === 'string' || !!(product as any).isReal;
+};
+
 export default function ProductCard({ product, idx = 0 }: ProductCardProps) {
   const { addToCart, toggleWish, wishlist, setCurrentProduct, showPage } = useApp();
   const inWish = wishlist.some((w) => w.id === product.id);
 
   const handleOpen = () => {
-    setCurrentProduct(product);
+    // ✅ إضافة: تجهيز المنتج قبل العرض
+    const enhancedProduct = {
+      ...product,
+      sku: generateSKU(product),
+      isReal: checkIsReal(product)
+    };
+    setCurrentProduct(enhancedProduct);
     showPage('product');
   };
 
   const handleWish = (e: React.MouseEvent) => {
     e.stopPropagation();
-    toggleWish(product);
+    // ✅ إضافة: تجهيز المنتج للمفضلة
+    const enhancedProduct = {
+      ...product,
+      sku: generateSKU(product),
+      isReal: checkIsReal(product)
+    };
+    toggleWish(enhancedProduct);
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
-    addToCart(product);
+    // ✅ إضافة: تجهيز المنتج قبل الإضافة للسلة
+    const enhancedProduct: Product & { sku: string; isReal: boolean } = {
+      ...product,
+      sku: generateSKU(product),
+      isReal: checkIsReal(product)
+    };
+    addToCart(enhancedProduct);
   };
 
   const bgStyle = GRADIENTS[product.bg] || GRADIENTS['gradient-1'];
