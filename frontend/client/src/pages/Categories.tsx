@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { PRODUCTS, formatPrice } from '../data/products';
 import { useApp } from '../contexts/AppContext';
+import { useLocation } from 'wouter';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -19,7 +20,8 @@ interface ApiProduct {
 }
 
 export default function Categories() {
-  const { currentCat, setCurrentCat, showToast, showPage, setCurrentProduct } = useApp();
+  const { currentCat, setCurrentCat, showToast } = useApp();
+  const [, setLocation] = useLocation();
   const [sort, setSort] = useState('popular');
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(200000);
@@ -80,55 +82,55 @@ export default function Categories() {
 
   return (
     <div>
-      <div style={{ padding: '14px 24px', background: 'white', borderBottom: '1px solid #eef0f3', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span style={{ fontSize: '12px', color: '#6b7280' }}>🏠 الرئيسية</span>
-        <span style={{ fontSize: '12px', color: '#6b7280' }}>◀</span>
-        <span style={{ fontSize: '12px', fontWeight: 700 }}>تصفح المنتجات</span>
+      <div className="px-6 py-3.5 bg-white border-b border-gray-100 flex items-center gap-2">
+        <span className="text-xs text-gray-500">🏠 الرئيسية</span>
+        <span className="text-xs text-gray-400">◀</span>
+        <span className="text-xs font-bold text-gray-900">تصفح المنتجات</span>
       </div>
 
-      <div style={{ display: 'flex', gap: 0 }}>
+      <div className="flex gap-0">
         {/* فلتر جانبي */}
-        <div style={{ width: '220px', flexShrink: 0, padding: '20px 16px', borderLeft: '1px solid #eef0f3', background: 'white' }}>
-          <div style={{ fontSize: '14px', fontWeight: 800, marginBottom: '14px' }}>🔽 الفلاتر</div>
+        <div className="w-[220px] flex-shrink-0 p-5 border-l border-gray-100 bg-white hidden md:block">
+          <div className="text-sm font-extrabold mb-3.5">🔽 الفلاتر</div>
 
-          <div style={{ marginBottom: '20px' }}>
-            <div style={{ fontSize: '12px', fontWeight: 800, color: '#6b7280', marginBottom: '8px' }}>القسم</div>
+          <div className="mb-5">
+            <div className="text-[11px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">القسم</div>
             {CATS.map(cat => (
-              <div key={cat.id} onClick={() => setCurrentCat(cat.id)} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 0', cursor: 'pointer', color: currentCat === cat.id ? '#1a7c2e' : '#374151', fontWeight: currentCat === cat.id ? 700 : 400 }}>
-                <div style={{ width: '16px', height: '16px', border: `2px solid ${currentCat === cat.id ? '#1a7c2e' : '#dde1e7'}`, borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: currentCat === cat.id ? '#1a7c2e' : 'white', color: 'white', fontSize: '10px' }}>
+              <div key={cat.id} onClick={() => setCurrentCat(cat.id)} className={`flex items-center gap-2 py-1.5 cursor-pointer transition-colors ${currentCat === cat.id ? 'text-primary font-bold' : 'text-gray-600 hover:text-primary'}`}>
+                <div className={`w-4 h-4 border-2 rounded flex items-center justify-center text-[10px] transition-colors ${currentCat === cat.id ? 'bg-primary border-primary text-white' : 'bg-white border-gray-200'}`}>
                   {currentCat === cat.id ? '✓' : ''}
                 </div>
-                <span style={{ fontSize: '13px' }}>{cat.label}</span>
+                <span className="text-[13px]">{cat.label}</span>
               </div>
             ))}
           </div>
 
-          <div style={{ marginBottom: '20px' }}>
-            <div style={{ fontSize: '12px', fontWeight: 800, color: '#6b7280', marginBottom: '8px' }}>السعر (دج)</div>
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <input type="number" value={minPrice} onChange={e => setMinPrice(Number(e.target.value))} style={{ width: '80px', padding: '6px 8px', border: '1px solid #dde1e7', borderRadius: '6px', fontFamily: 'Cairo, sans-serif', fontSize: '12px' }} placeholder="من" />
+          <div className="mb-5">
+            <div className="text-[11px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">السعر (دج)</div>
+            <div className="flex gap-2 items-center">
+              <input type="number" value={minPrice} onChange={e => setMinPrice(Number(e.target.value))} className="w-20 px-2 py-1.5 border border-gray-200 rounded-md font-cairo text-xs outline-none focus:border-primary" placeholder="من" />
               <span>—</span>
-              <input type="number" value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))} style={{ width: '80px', padding: '6px 8px', border: '1px solid #dde1e7', borderRadius: '6px', fontFamily: 'Cairo, sans-serif', fontSize: '12px' }} placeholder="إلى" />
+              <input type="number" value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))} className="w-20 px-2 py-1.5 border border-gray-200 rounded-md font-cairo text-xs outline-none focus:border-primary" placeholder="إلى" />
             </div>
-            <button onClick={() => showToast('تم تطبيق الفلتر', 'success')} style={{ width: '100%', padding: '9px', background: '#1a7c2e', color: 'white', border: 'none', borderRadius: '7px', fontFamily: 'Cairo, sans-serif', fontSize: '13px', fontWeight: 700, cursor: 'pointer', marginTop: '8px' }}>
+            <button onClick={() => showToast('تم تطبيق الفلتر', 'success')} className="w-full mt-2 py-2 bg-primary text-white rounded-lg font-cairo text-[13px] font-bold hover:bg-primary-dark transition-colors">
               تطبيق
             </button>
           </div>
         </div>
 
         {/* المنتجات */}
-        <div style={{ flex: 1, padding: '20px' }}>
+        <div className="flex-1 p-5">
           {/* رقائق الفئات */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
+          <div className="flex gap-2 flex-wrap mb-4">
             {CATS.map(cat => (
-              <div key={cat.id} onClick={() => setCurrentCat(cat.id)} style={{ padding: '6px 14px', border: `1px solid ${currentCat === cat.id ? '#1a7c2e' : '#dde1e7'}`, borderRadius: '99px', background: currentCat === cat.id ? '#1a7c2e' : 'white', color: currentCat === cat.id ? 'white' : '#374151', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontSize: '13px', fontWeight: 600 }}>
+              <div key={cat.id} onClick={() => setCurrentCat(cat.id)} className={`px-3.5 py-1.5 border rounded-full cursor-pointer font-cairo text-[13px] font-semibold transition-all ${currentCat === cat.id ? 'bg-primary border-primary text-white' : 'bg-white border-gray-200 text-gray-700 hover:border-primary hover:text-primary'}`}>
                 {cat.label}
               </div>
             ))}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '13px', color: '#6b7280' }}>
+          <div className="flex items-center gap-3 mb-4 flex-wrap">
+            <span className="text-[13px] text-gray-500">
               عرض <strong style={{ color: '#111827' }}>{products.length}</strong> منتج
               {apiProducts.length > 0 && <span style={{ marginRight: '8px', color: '#1a7c2e', fontSize: '11px' }}>✅ منتجات حقيقية</span>}
               {loading && <span style={{ marginRight: '8px', color: '#6b7280', fontSize: '11px' }}>⏳ جاري التحميل...</span>}
@@ -143,19 +145,19 @@ export default function Categories() {
           </div>
 
           {products.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: '14px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3.5">
               {products.map((p) => (
-                <div key={p.id} onClick={() => showToast(p.name, 'info')} style={{ background: 'white', borderRadius: '14px', border: '1px solid #eef0f3', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-                  <div style={{ height: '160px', background: 'linear-gradient(135deg,#edf7f0,#c8e6c9)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '56px' }}>
+                <div key={p.id} onClick={() => setLocation(`/product/${p._id || p.id}`)} className="bg-white rounded-2xl border border-gray-100 overflow-hidden cursor-pointer transition-all hover:shadow-md hover:-translate-y-1">
+                  <div className="h-40 bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center text-5xl">
                     {p.emoji}
                   </div>
-                  <div style={{ padding: '12px' }}>
-                    {p.isNew && <span style={{ background: '#edf7f0', color: '#1a7c2e', fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '99px', marginBottom: '6px', display: 'inline-block' }}>جديد</span>}
-                    <div style={{ fontWeight: 700, fontSize: '13px', marginBottom: '4px', lineHeight: 1.4 }}>{p.name}</div>
-                    <div style={{ fontSize: '11px', color: '#6b7280', marginBottom: '8px' }}>{p.desc?.slice(0, 50)}...</div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontWeight: 900, color: '#1a7c2e', fontSize: '15px' }}>{formatPrice(p.price)}</span>
-                      <button onClick={e => { e.stopPropagation(); showToast('تمت الإضافة للسلة ✅', 'success'); }} style={{ padding: '6px 12px', background: '#1a7c2e', color: 'white', border: 'none', borderRadius: '8px', fontFamily: 'Cairo,sans-serif', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>
+                  <div className="p-3">
+                    {p.isNew && <span className="bg-green-50 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full mb-1.5 inline-block">جديد</span>}
+                    <div className="font-bold text-[13px] mb-1 line-clamp-1">{p.name}</div>
+                    <div className="text-[11px] text-gray-500 mb-2 line-clamp-2 leading-relaxed">{p.desc?.slice(0, 50)}...</div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-black text-primary text-[15px]">{formatPrice(p.price)}</span>
+                      <button onClick={e => { e.stopPropagation(); showToast('تمت الإضافة للسلة ✅', 'success'); }} className="px-3 py-1.5 bg-primary text-white rounded-lg font-cairo text-xs font-bold hover:bg-primary-dark transition-colors">
                         🛒 أضف
                       </button>
                     </div>
@@ -164,10 +166,10 @@ export default function Categories() {
               ))}
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '60px 24px', color: '#6b7280' }}>
-              <div style={{ fontSize: '56px', marginBottom: '12px' }}>🔍</div>
-              <div style={{ fontSize: '18px', fontWeight: 700, marginBottom: '6px' }}>لا توجد منتجات</div>
-              <div style={{ fontSize: '13px' }}>جرب تغيير الفلاتر</div>
+            <div className="text-center py-16 text-gray-400">
+              <div className="text-6xl mb-3">🔍</div>
+              <div className="text-lg font-bold text-gray-900 mb-1">لا توجد منتجات</div>
+              <div className="text-[13px]">جرب تغيير الفلاتر أو البحث عن شيء آخر</div>
             </div>
           )}
         </div>

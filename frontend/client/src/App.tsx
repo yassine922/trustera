@@ -1,72 +1,45 @@
-import { AppProvider, useApp } from './contexts/AppContext';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { Toaster } from './components/ui/sonner';
-import { TooltipProvider } from './components/ui/tooltip';
-import ErrorBoundary from './components/ErrorBoundary';
-import Header from './components/layout/Header';
-import Sidebar from './components/layout/Sidebar';
-import RightPanel from './components/layout/RightPanel';
-import Toast from './components/shared/Toast';
-import Home from './pages/Home';
-import Categories from './pages/Categories';
-import ProductPage from './pages/Product';
-import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
-import Login from './pages/Login';
-import SellerDashboard from './pages/SellerDashboard';
-import ManagerDashboard from './pages/ManagerDashboard';
-import { OrderSuccess, Wishlist, Account, SellerRegister, NotFound } from './pages/OtherPages';
-import './index.css';
+import { Route, Switch } from "wouter";
+import Layout from "./components/layout/Layout";
+import Home from "./pages/Home";
+import Categories from "./pages/Categories";
+import ProductPage from "./pages/Product";
+import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
+import Login from "./pages/Login";
+import SellerDashboard from "./pages/SellerDashboard";
+import ManagerDashboard from "./pages/ManagerDashboard";
+import { OrderSuccess, Wishlist, Account, SellerRegister, NotFound } from "./pages/OtherPages";
+import { AppProvider } from "./contexts/AppContext";
 
-// Pages that use full layout (header + sidebar)
-const LAYOUT_PAGES = ['home', 'categories', 'product', 'cart', 'checkout', 'order-success', 'wishlist', 'account', 'seller-register'];
-
-function AppContent() {
-  const { currentPage } = useApp();
-
-  // Full-screen pages (no layout)
-  if (currentPage === 'login') return <Login />;
-  if (currentPage === 'seller-dashboard') return <SellerDashboard />;
-  if (currentPage === 'manager-dashboard') return <ManagerDashboard />;
-
-  const pages: Record<string, React.ReactNode> = {
-    'home': <Home />,
-    'categories': <Categories />,
-    'product': <ProductPage />,
-    'cart': <Cart />,
-    'checkout': <Checkout />,
-    'order-success': <OrderSuccess />,
-    'wishlist': <Wishlist />,
-    'account': <Account />,
-    'seller-register': <SellerRegister />,
-  };
-
+function App() {
   return (
-    <div>
-      <Header />
-      <div id="app">
-        <div className="layout">
-          <Sidebar />
-          <main id="main">{pages[currentPage] || <NotFound />}</main>
-          <RightPanel />
-        </div>
-      </div>
-      <Toast />
-    </div>
+    <AppProvider>
+      <Layout>
+        <Switch>
+          {/* المسارات العامة */}
+          <Route path="/" component={Home} />
+          <Route path="/categories" component={Categories} />
+          <Route path="/product/:id" component={ProductPage} />
+          <Route path="/cart" component={Cart} />
+          <Route path="/login" component={Login} />
+          <Route path="/seller-register" component={SellerRegister} />
+          
+          {/* مسارات الحساب والطلبات */}
+          <Route path="/checkout" component={Checkout} />
+          <Route path="/order-success" component={OrderSuccess} />
+          <Route path="/wishlist" component={Wishlist} />
+          <Route path="/account" component={Account} />
+
+          {/* لوحات التحكم (محمية برمجياً داخل المكونات) */}
+          <Route path="/seller-dashboard" component={SellerDashboard} />
+          <Route path="/manager-dashboard" component={ManagerDashboard} />
+
+          {/* صفحة 404 */}
+          <Route component={NotFound} />
+        </Switch>
+      </Layout>
+    </AppProvider>
   );
 }
 
-export default function App() {
-  return (
-    <ErrorBoundary>
-      <ThemeProvider defaultTheme="light">
-        <AppProvider>
-          <TooltipProvider>
-            <Toaster />
-            <AppContent />
-          </TooltipProvider>
-        </AppProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
-  );
-}
+export default App;

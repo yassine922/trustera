@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../contexts/AppContext';
+import { useLocation } from 'wouter';
 
 type Tab = 'login' | 'register';
 type Role = 'buyer' | 'seller';
@@ -7,7 +8,8 @@ type Role = 'buyer' | 'seller';
 const API_URL = import.meta.env.VITE_API_URL || '';
 
 export default function Login() {
-  const { showPage, showToast, setUser } = useApp();
+  const { showToast, setUser } = useApp();
+  const [, setLocation] = useLocation();
   const [tab, setTab] = useState<Tab>('login');
   const [role, setRole] = useState<Role>('buyer');
   const [loading, setLoading] = useState(false);
@@ -43,9 +45,9 @@ export default function Login() {
       showToast('مرحباً بك! 👋', 'success');
 
       const r = data.user.role;
-      if (r === 'admin') showPage('manager-dashboard');
-      else if (r === 'seller') showPage('seller-dashboard');
-      else showPage('home');
+      if (r === 'admin') setLocation('/manager-dashboard');
+      else if (r === 'seller') setLocation('/seller-dashboard');
+      else setLocation('/');
     } catch {
       setError('خطأ في الاتصال بالخادم');
     } finally {
@@ -53,37 +55,23 @@ export default function Login() {
     }
   }
 
-  const inp: React.CSSProperties = {
-    width: '100%', padding: '11px 14px', borderRadius: '8px',
-    border: '1.5px solid #dde1e7', fontFamily: 'Cairo,sans-serif',
-    fontSize: '14px', outline: 'none', boxSizing: 'border-box',
-    background: '#fafafa', direction: 'rtl',
-  };
-  const btn: React.CSSProperties = {
-    width: '100%', padding: '13px', background: '#1a7c2e', color: 'white',
-    border: 'none', borderRadius: '10px', fontFamily: 'Cairo,sans-serif',
-    fontSize: '15px', fontWeight: 800, cursor: 'pointer',
-  };
-
   return (
-    <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', background: '#f5f7fa' }}>
-      <div style={{ width: '100%', maxWidth: '420px', background: 'white', borderRadius: '20px', padding: '36px 32px', boxShadow: '0 4px 32px rgba(0,0,0,0.08)' }}>
+    <div className="min-h-[80vh] flex items-center justify-center p-6 bg-gray-50 font-cairo" dir="rtl">
+      <div className="w-full max-w-[420px] bg-white rounded-3xl p-8 md:p-10 shadow-xl shadow-gray-200/50 border border-gray-100">
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <div style={{ fontSize: '28px', fontWeight: 900, color: '#1a7c2e' }}>🛍️ Trustera</div>
-          <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>منصة التسوق الأولى في الجزائر</div>
+        <div className="text-center mb-8">
+          <div className="text-3xl font-black text-primary">🛍️ Trustera</div>
+          <div className="text-sm text-gray-500 mt-2">منصة التسوق الأولى في الجزائر</div>
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', background: '#f3f4f6', borderRadius: '10px', padding: '4px', marginBottom: '24px' }}>
+        <div className="flex bg-gray-100 rounded-2xl p-1.5 mb-8">
           {(['login', 'register'] as Tab[]).map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{
-              flex: 1, padding: '9px', border: 'none', borderRadius: '8px', fontFamily: 'Cairo,sans-serif',
-              fontSize: '14px', fontWeight: 700, cursor: 'pointer',
-              background: tab === t ? 'white' : 'transparent',
-              color: tab === t ? '#1a7c2e' : '#6b7280',
-              boxShadow: tab === t ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
-            }}>
+            <button 
+              key={t} 
+              onClick={() => setTab(t)} 
+              className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-all ${tab === t ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
               {t === 'login' ? 'تسجيل الدخول' : 'حساب جديد'}
             </button>
           ))}
@@ -91,41 +79,46 @@ export default function Login() {
 
         {/* Role selector (register only) */}
         {tab === 'register' && (
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '18px' }}>
+          <div className="flex gap-3 mb-6">
             {([['buyer', '🛍️ زبون'], ['seller', '🏪 بائع']] as [Role, string][]).map(([r, label]) => (
-              <button key={r} onClick={() => setRole(r)} style={{
-                flex: 1, padding: '10px', border: `2px solid ${role === r ? '#1a7c2e' : '#dde1e7'}`,
-                borderRadius: '10px', fontFamily: 'Cairo,sans-serif', fontSize: '14px', fontWeight: 700,
-                cursor: 'pointer', background: role === r ? '#edf7f0' : 'white',
-                color: role === r ? '#1a7c2e' : '#6b7280',
-              }}>{label}</button>
+              <button 
+                key={r} 
+                onClick={() => setRole(r)} 
+                className={`flex-1 py-3 border-2 rounded-2xl font-bold text-sm transition-all ${role === r ? 'border-primary bg-green-50 text-primary' : 'border-gray-100 bg-white text-gray-400 hover:border-gray-200'}`}
+              >
+                {label}
+              </button>
             ))}
           </div>
         )}
 
         {/* Fields */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div className="space-y-4">
           {tab === 'register' && (
-            <input style={inp} placeholder="الاسم الكامل" value={form.name} onChange={e => set('name', e.target.value)} />
+            <input className="w-full px-4 py-3.5 bg-gray-50 border-2 border-transparent rounded-xl text-sm font-bold outline-none focus:border-primary focus:bg-white transition-all" placeholder="الاسم الكامل" value={form.name} onChange={e => set('name', e.target.value)} />
           )}
-          <input style={inp} type="email" placeholder="البريد الإلكتروني" value={form.email} onChange={e => set('email', e.target.value)} />
-          <input style={inp} type="password" placeholder="كلمة المرور" value={form.password} onChange={e => set('password', e.target.value)} />
+          <input className="w-full px-4 py-3.5 bg-gray-50 border-2 border-transparent rounded-xl text-sm font-bold outline-none focus:border-primary focus:bg-white transition-all" type="email" placeholder="البريد الإلكتروني" value={form.email} onChange={e => set('email', e.target.value)} />
+          <input className="w-full px-4 py-3.5 bg-gray-50 border-2 border-transparent rounded-xl text-sm font-bold outline-none focus:border-primary focus:bg-white transition-all" type="password" placeholder="كلمة المرور" value={form.password} onChange={e => set('password', e.target.value)} />
         </div>
 
         {/* Error */}
         {error && (
-          <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', padding: '10px 14px', color: '#dc2626', fontSize: '13px', marginTop: '12px', textAlign: 'right' }}>
+          <div className="bg-red-50 border border-red-100 rounded-xl p-4 text-red-600 text-xs font-bold mt-4 flex items-center gap-2">
             ⚠️ {error}
           </div>
         )}
 
-        <button style={{ ...btn, marginTop: '20px', opacity: loading ? 0.7 : 1 }} onClick={handleSubmit} disabled={loading}>
+        <button 
+          className="w-full mt-8 py-4 bg-primary text-white rounded-2xl font-black text-base shadow-lg shadow-green-100 hover:bg-primary-dark transition-all disabled:bg-gray-300 disabled:shadow-none" 
+          onClick={handleSubmit} 
+          disabled={loading}
+        >
           {loading ? '⏳ جاري التحميل...' : tab === 'login' ? 'تسجيل الدخول' : 'إنشاء الحساب'}
         </button>
 
-        <div style={{ textAlign: 'center', marginTop: '16px', fontSize: '13px', color: '#6b7280' }}>
+        <div className="text-center mt-6 text-sm text-gray-500 font-bold">
           {tab === 'login' ? 'ليس لديك حساب؟ ' : 'لديك حساب؟ '}
-          <span onClick={() => setTab(tab === 'login' ? 'register' : 'login')} style={{ color: '#1a7c2e', fontWeight: 700, cursor: 'pointer' }}>
+          <span onClick={() => setTab(tab === 'login' ? 'register' : 'login')} className="text-primary hover:underline cursor-pointer">
             {tab === 'login' ? 'سجّل الآن' : 'سجّل دخولك'}
           </span>
         </div>

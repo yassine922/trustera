@@ -1,7 +1,9 @@
 import { useApp } from '../../contexts/AppContext';
+import { useLocation } from 'wouter';
 
 export default function Sidebar() {
-  const { showPage, wishCount, user } = useApp();
+  const { wishCount, user } = useApp();
+  const [, setLocation] = useLocation();
 
   const buyerItems = [
     { icon: '🏠', label: 'الرئيسية', page: 'home', badge: null },
@@ -34,21 +36,21 @@ export default function Sidebar() {
       {/* زر الإجراء الرئيسي */}
       {user?.role === 'seller' ? (
         <button
-          onClick={() => showPage('seller-dashboard' as any)}
+          onClick={() => setLocation('/seller-dashboard')}
           className="w-11/12 mx-auto mb-2.5 py-2 bg-primary text-white border-0 rounded-lg font-cairo text-sm font-bold cursor-pointer flex items-center justify-center gap-1.5 hover:bg-primary-dark transition"
         >
           🏪 لوحة البائع
         </button>
       ) : user?.role === 'admin' ? (
         <button
-          onClick={() => showPage('manager-dashboard' as any)}
+          onClick={() => setLocation('/manager-dashboard')}
           className="w-11/12 mx-auto mb-2.5 py-2 bg-primary text-white border-0 rounded-lg font-cairo text-sm font-bold cursor-pointer flex items-center justify-center gap-1.5 hover:bg-primary-dark transition"
         >
           👑 لوحة المدير
         </button>
       ) : (
         <button
-          onClick={() => showPage(user ? 'seller-register' : 'login' as any)}
+          onClick={() => setLocation(user ? '/seller-register' : '/login')}
           className="w-11/12 mx-auto mb-2.5 py-2 bg-primary text-white border-0 rounded-lg font-cairo text-sm font-bold cursor-pointer flex items-center justify-center gap-1.5 hover:bg-primary-dark transition"
         >
           ➕ إضافة منتج
@@ -59,7 +61,7 @@ export default function Sidebar() {
       {items.map((item, i) => (
         <div
           key={i}
-          onClick={() => showPage(item.page as any)}
+          onClick={() => setLocation(item.page === 'home' ? '/' : '/' + item.page)}
           className="flex items-center justify-between px-4 py-2.5 cursor-pointer text-gray-700 text-sm font-semibold border-r-3 border-r-transparent transition-all hover:bg-primary-bg hover:text-primary hover:border-r-primary"
         >
           <div className="flex items-center gap-2.5">
@@ -82,7 +84,7 @@ export default function Sidebar() {
           <div className="text-xs font-bold mb-1.5">هل أنت بائع؟</div>
           <p className="text-xs text-gray-700 leading-relaxed mb-2.5">ابدأ البيع الآن ووصل لآلاف الزبائن</p>
           <button
-            onClick={() => showPage(user ? 'seller-register' : 'login' as any)}
+            onClick={() => setLocation(user ? '/seller-register' : '/login')}
             className="w-full py-2 bg-primary text-white border-0 rounded-lg font-cairo text-sm font-bold cursor-pointer hover:bg-primary-dark transition"
           >
             🏪 تسجيل كبائع
@@ -96,7 +98,7 @@ export default function Sidebar() {
           <div className="text-xs font-bold mb-1.5 text-blue-800">👋 مرحباً بك</div>
           <p className="text-xs text-blue-700 leading-relaxed mb-2.5">سجّل دخولك للوصول لجميع المميزات</p>
           <button
-            onClick={() => showPage('login' as any)}
+            onClick={() => setLocation('/login')}
             className="w-full py-2 bg-blue-600 text-white border-0 rounded-lg font-cairo text-sm font-bold cursor-pointer hover:bg-blue-700 transition"
           >
             🔑 تسجيل الدخول

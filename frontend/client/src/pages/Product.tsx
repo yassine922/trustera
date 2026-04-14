@@ -1,192 +1,232 @@
-import { useState } from 'react';
-import { getById, getSellerById, getByCategory, formatPrice } from '../data/products';
+import { useState, useEffect } from 'react';
+import { formatPrice } from '../data/products'; // قد تحتاج لتحديث أو حذف هذا الاستيراد إذا كانت جميع البيانات ستأتي من API
 import ReviewSection from '../components/shared/ReviewSection';
 import ProductCard from '../components/shared/ProductCard';
 import { useApp } from '../contexts/AppContext';
+import { useRoute, useLocation } from 'wouter';
+import axios from 'axios'; // إضافة axios لجلب البيانات من API
+
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 function Stars({ rating }: { rating: number }) {
-  return <span>{[1,2,3,4,5].map(i => <span key={i} style={{ color: i <= Math.floor(rating) ? '#f59e0b' : '#d1d5db', fontSize: '14px' }}>★</span>)}</span>;
+  return <span className="flex gap-0.5">{[1,2,3,4,5].map(i => <span key={i} className={`${i <= Math.floor(rating) ? 'text-amber-500' : 'text-gray-300'} text-sm`}>★</span>)}</span>;
 }
 
 export default function ProductPage() {
-  const { currentProduct, addToCart, toggleWish, wishlist, showPage, showToast } = useApp();
+  const { addToCart, toggleWish, wishlist, showToast, token } = useApp();
+  const [, setLocation] = useLocation();
+  const [match, params] = useRoute("/product/:id");
   const [qty, setQty] = useState(1);
-  const [selColor, setSelColor] = useState<string | null>(null);
-  const [selSize, setSelSize] = useState<string | null>(null);
+  const [product, setProduct] = useState<any>(null); // سيتم جلب المنتج من API
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!currentProduct) { showPage('home'); return null; }
+  // جلب بيانات المنتج من API
+  useEffect(() => {
+    async function fetchProduct() {
+      if (!params?.id) {
+        setLocation('/'); // العودة للرئيسية إذا لم يكن هناك ID
+        return;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await axios.get(`${API_URL}/products/${params.id}`, { headers });
+        if (res.data.success) {
+          setProduct(res.data.data);
+          setQty(1); // إعادة ضبط الكمية عند تغيير المنتج
+          window.scrollTo(0, 0);
+        } else {
+          showToast(res.data.message || 'فشل جلب المنتج', 'error');
+          setLocation('/categories'); // العودة لصفحة التصنيفات
+        }
+      } catch (err: any) {
+        console.error('Error fetching product:', err);
+        setError(err.response?.data?.message || 'خطأ في جلب بيانات المنتج');
+        showToast(err.response?.data?.message || 'خطأ في جلب بيانات المنتج', 'error');
+        setLocation('/categories'); // العودة لصفحة التصنيفات
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProduct();
+  }, [params?.id, token, setLocation, showToast]);
 
-  const p = currentProduct;
-  const seller = getSellerById(p.sellerId);
-  const related = getByCategory(p.cat).filter(r => r.id !== p.id).slice(0, 4);
-  const inWish = wishlist.some(w => w.id === p.id);
+  // يمكن حذف هذه الوظائف أو تعديلها لتتناسب مع البيانات الحقيقية من API
+  // حاليًا تعتمد على دالة getByCategory التي تجلب من بيانات ثابتة
+  const fetchRelatedProducts = async (categoryId: string) => {
+    try {
+      // هنا يجب عليك استدعاء API جلب المنتجات حسب الفئة
+      // للمثال، سنعيد استخدام الدالة الثابتة أو نصمم API endpoint لذلك
+      // مثال: const res = await axios.get(`${API_URL}/products?category=${categoryId}`);
+      // ولكن للحفاظ على تشغيل الكود مع الـ diff الحالي، سنستخدم دالة وهمية أو ثابتة
+      return []; // placeholder
+    } catch (e) {
+      console.error('Error fetching related products', e);
+      return [];
+    }
+  };
 
-  const gradients: Record<string, string> = {
-    'gradient-1': 'linear-gradient(135deg,#dbeafe,#bfdbfe)',
-    'gradient-2': 'linear-gradient(135deg,#fce7f3,#fbcfe8)',
-    'gradient-3': 'linear-gradient(135deg,#dcfce7,#bbf7d0)',
-    'gradient-4': 'linear-gradient(135deg,#fef9c3,#fef08a)',
-    'gradient-5': 'linear-gradient(135deg,#f3e8ff,#e9d5ff)',
-    'gradient-6': 'linear-gradient(135deg,#ccfbf1,#99f6e4)',
+  const [related, setRelated] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (product?.category) {
+      fetchRelatedProducts(product.category).then(data => {
+        // فلترة المنتج الحالي إذا كانت البيانات الثابتة تحتوي عليه
+        const filtered = data.filter((r:any) => r._id !== product._id);
+        setRelated(filtered.slice(0, 4));
+      });
+    }
+  }, [product]);
+
+
+  if (loading) return <div className="p-20 text-center font-cairo font-bold text-gray-400">جاري تحميل المنتج...</div>;
+  if (error) return <div className="p-20 text-center font-cairo font-bold text-red-500">{error}</div>;
+  if (!product) return null; // لا شيء للعرض إذا لم يتم تحميل المنتج وبعد التحقق من الأخطاء
+
+  const p = product;
+  // const seller = getSellerById(p.sellerId); // يجب جلب معلومات البائع من API
+  const inWish = wishlist.some(w => w.id === p._id); // استخدام _id ليتوافق مع MongoDB
+
+  const bgClasses: Record<string, string> = {
+    'gradient-1': 'from-blue-50 to-blue-200',
+    'gradient-2': 'from-pink-50 to-pink-200',
+    'gradient-3': 'from-green-50 to-green-200',
+    'gradient-4': 'from-yellow-50 to-yellow-200',
+    'gradient-5': 'from-purple-50 to-purple-200',
+    'gradient-6': 'from-teal-50 to-teal-200',
   };
 
   return (
-    <div>
+    <div className="font-cairo animate-in fade-in duration-500">
       {/* Breadcrumb */}
-      <div style={{ padding: '14px 24px', background: 'white', borderBottom: '1px solid #eef0f3', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#6b7280' }}>
-        <a onClick={() => showPage('home')} style={{ color: '#1a7c2e', cursor: 'pointer' }}>الرئيسية</a> ◀
-        <a onClick={() => showPage('categories')} style={{ color: '#1a7c2e', cursor: 'pointer' }}>المنتجات</a> ◀
-        <span style={{ fontWeight: 700 }}>{p.name}</span>
+      <div className="px-6 py-3.5 bg-white border-b border-gray-100 flex items-center gap-2 text-xs text-gray-500">
+        <button onClick={() => setLocation('/')} className="text-primary hover:underline">الرئيسية</button>
+        <span className="text-gray-300 text-[10px]">◀</span>
+        <button onClick={() => setLocation('/categories')} className="text-primary hover:underline">المنتجات</button>
+        <span className="text-gray-300 text-[10px]">◀</span>
+        <span className="font-bold text-gray-900">{p.name}</span>
       </div>
 
-      {/* تفاصيل المنتج */}
-      <div style={{ display: 'flex', gap: '24px', padding: '20px 24px' }}>
+      <div className="flex flex-col lg:flex-row gap-8 p-6">
         {/* معرض الصور */}
-        <div style={{ width: '400px', flexShrink: 0 }}>
-          <div style={{ background: gradients[p.bg] || gradients['gradient-1'], borderRadius: '14px', aspectRatio: '1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '130px', border: '1px solid #eef0f3', position: 'relative', overflow: 'hidden' }}>
-            <span style={{ filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.15))' }}>{p.emoji}</span>
-            {p.discount && <div style={{ position: 'absolute', top: '12px', right: '12px', background: '#d32f2f', color: 'white', fontSize: '13px', fontWeight: 800, padding: '4px 10px', borderRadius: '99px' }}>-{p.discount}%</div>}
+        <div className="w-full lg:w-[400px] flex-shrink-0">
+          <div className={`bg-gradient-to-br ${bgClasses[p.bg] || 'from-gray-50 to-gray-100'} rounded-2xl aspect-square flex items-center justify-center text-[130px] border border-gray-100 relative overflow-hidden shadow-inner`}>
+            {p.image ? <img src={p.image} alt={p.name} className="object-cover w-full h-full" /> : <span className="drop-shadow-2xl transition-transform hover:scale-110 duration-300 cursor-zoom-in">📦</span>}
+            {p.discount && <div className="absolute top-4 right-4 bg-red-600 text-white text-sm font-black px-3 py-1 rounded-full shadow-lg">-{p.discount}%</div>}
           </div>
-          <div style={{ display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' }}>
-            {['📦','🔍','💡','⭐'].map((icon, i) => (
-              <div key={i} style={{ width: '72px', height: '72px', borderRadius: '8px', border: `2px solid ${i === 0 ? '#1a7c2e' : '#dde1e7'}`, background: i === 0 ? '#edf7f0' : '#f4f6f8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', cursor: 'pointer' }}>
-                {icon}
+          <div className="flex gap-2.5 mt-4 overflow-x-auto pb-2">
+            {[p.image || '📦', '🔍','💡','⭐'].map((item, i) => ( // استخدام صورة المنتج إن وجدت
+              <div key={i} className={`w-18 h-18 rounded-xl border-2 flex items-center justify-center text-3xl cursor-pointer transition-all ${i === 0 ? 'border-primary bg-green-50 shadow-sm' : 'border-gray-100 bg-gray-50 hover:border-primary/30'}`}>
+                {typeof item === 'string' && item.startsWith('http') ? <img src={item} alt="thumbnail" className="object-cover w-full h-full rounded-lg"/> : item}
               </div>
             ))}
           </div>
         </div>
 
         {/* معلومات المنتج */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: '12px', color: '#1a7c2e', fontWeight: 700, marginBottom: '6px' }}>{p.catLabel}</div>
-          <h1 style={{ fontSize: '22px', fontWeight: 900, marginBottom: '12px', lineHeight: 1.3 }}>{p.name}</h1>
+        <div className="flex-1 min-w-0">
+          <div className="text-xs text-primary font-black uppercase tracking-widest mb-1.5">{p.category || 'عام'}</div>
+          <h1 className="text-2xl md:text-3xl font-black text-gray-900 mb-3 leading-tight">{p.name}</h1>
 
           {/* التقييم */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px', flexWrap: 'wrap' }}>
-            <Stars rating={p.rating} />
-            <span style={{ fontWeight: 700 }}>{p.rating}</span>
-            <span style={{ fontSize: '13px', color: '#6b7280' }}>({p.reviews} تقييم)</span>
-            <span style={{ fontSize: '12px', color: '#1a7c2e', fontWeight: 600 }}>تم البيع: {p.sold.toLocaleString()} مرة</span>
-            {p.isNew && <span style={{ background: '#edf7f0', color: '#1a7c2e', padding: '2px 8px', borderRadius: '99px', fontSize: '11px', fontWeight: 700 }}>جديد</span>}
-            {p.isFast && <span style={{ background: '#dbeafe', color: '#0284c7', padding: '2px 8px', borderRadius: '99px', fontSize: '11px', fontWeight: 700 }}>⚡ شحن سريع</span>}
+          <div className="flex items-center gap-3 mb-5 flex-wrap">
+            <Stars rating={p.averageRating} /> {/* استخدام averageRating من API */}
+            <span className="font-bold text-gray-900">{p.averageRating}</span>
+            <span className="text-sm text-gray-400">({p.reviewsCount} تقييم)</span> {/* استخدام reviewsCount من API */}
+            <div className="h-4 w-px bg-gray-200 hidden sm:block"></div>
+            <span className="text-xs text-primary font-bold">تم البيع: {p.sold || 0} مرة</span> {/* لا يوجد sold حاليًا في API Product */}
+            {/* {p.isNew && <span className="bg-green-50 text-primary px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase">جديد</span>} */}
+            {/* {p.isFast && <span className="bg-blue-50 text-blue-600 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter">⚡ شحن سريع</span>} */}
           </div>
 
           {/* السعر */}
-          <div style={{ background: '#f4f6f8', borderRadius: '10px', padding: '16px', marginBottom: '18px', border: '1px solid #eef0f3' }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '28px', fontWeight: 900, color: '#145c22' }}>{formatPrice(p.price)}</span>
-              {p.oldPrice && <span style={{ fontSize: '16px', color: '#6b7280', textDecoration: 'line-through' }}>{formatPrice(p.oldPrice)}</span>}
-              {p.discount && <span style={{ background: '#fee2e2', color: '#d32f2f', fontSize: '13px', fontWeight: 700, padding: '3px 8px', borderRadius: '99px' }}>وفّر {p.discount}%</span>}
+          <div className="bg-gray-50 rounded-2xl p-5 mb-6 border border-gray-100 shadow-sm">
+            <div className="flex items-baseline gap-3 flex-wrap">
+              <span className="text-3xl font-black text-primary">{formatPrice(p.price)} دج</span>
+              {/* {p.oldPrice && <span className="text-lg text-gray-400 line-through font-bold">{formatPrice(p.oldPrice)} دج</span>} */}
+              {/* {p.discount && <span className="bg-red-50 text-red-600 text-xs font-black px-2.5 py-1 rounded-lg">وفر {p.discount}%</span>} */}
             </div>
-            <div style={{ fontSize: '12px', color: '#374151', marginTop: '8px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-              <span>🚚 توصيل مجاني فوق 5000 دج</span>
-              <span>📦 متوفر في المخزن: {p.stock} قطعة</span>
-              <span>↩️ إرجاع مجاني خلال 14 يوم</span>
+            <div className="text-[11px] text-gray-500 mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="flex items-center gap-1.5"><span className="text-lg">🚚</span> توصيل مجاني فوق 5000 دج</div>
+              <div className="flex items-center gap-1.5 font-bold text-gray-700"><span className="text-lg">📦</span> متوفر: {p.stock} قطعة</div>
+              <div className="flex items-center gap-1.5"><span className="text-lg">↩️</span> إرجاع مجاني خلال 14 يوم</div>
             </div>
           </div>
-
-          {/* الألوان */}
-          {p.colors.length > 0 && (
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '8px' }}>
-                اللون: <em style={{ fontStyle: 'normal', color: '#1a7c2e' }}>{selColor || 'اختر لوناً'}</em>
-              </div>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {p.colors.map(c => (
-                  <div key={c} onClick={() => setSelColor(c)} style={{ width: '32px', height: '32px', borderRadius: '50%', background: c, cursor: 'pointer', border: `3px solid ${selColor === c ? '#1a7c2e' : 'transparent'}`, boxShadow: '0 0 0 1px #dde1e7', transform: selColor === c ? 'scale(1.15)' : 'scale(1)', transition: 'all 0.2s' }} />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* المقاسات */}
-          {p.sizes.length > 0 && (
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '8px' }}>
-                المقاس: <em style={{ fontStyle: 'normal', color: '#1a7c2e' }}>{selSize || 'اختر مقاساً'}</em>
-              </div>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {p.sizes.map(s => (
-                  <button key={s} onClick={() => setSelSize(s)} style={{ padding: '7px 14px', border: `2px solid ${selSize === s ? '#1a7c2e' : '#dde1e7'}`, borderRadius: '7px', background: selSize === s ? '#edf7f0' : 'white', color: selSize === s ? '#1a7c2e' : '#374151', cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontSize: '13px', fontWeight: 600, transition: 'all 0.2s' }}>
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
+          
           {/* الكمية */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
-            <span style={{ fontSize: '13px', fontWeight: 700 }}>الكمية:</span>
-            <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #dde1e7', borderRadius: '8px', overflow: 'hidden' }}>
-              <button onClick={() => setQty(q => Math.max(1, q - 1))} style={{ width: '36px', height: '36px', border: 'none', background: '#f4f6f8', cursor: 'pointer', fontSize: '16px', fontWeight: 700 }}>−</button>
-              <span style={{ width: '44px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '15px' }}>{qty}</span>
-              <button onClick={() => setQty(q => Math.min(p.stock, q + 1))} style={{ width: '36px', height: '36px', border: 'none', background: '#f4f6f8', cursor: 'pointer', fontSize: '16px', fontWeight: 700 }}>+</button>
+          <div className="flex items-center gap-3 mb-5">
+            <span className="text-sm font-bold text-gray-700">الكمية:</span>
+            <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden">
+              <button onClick={() => setQty(q => Math.max(1, q - 1))} className="w-9 h-9 bg-gray-50 text-gray-700 border-r border-gray-100 text-lg font-bold hover:bg-gray-100 transition-colors">−</button>
+              <span className="w-11 h-9 flex items-center justify-center font-bold text-base text-gray-900">{qty}</span>
+              <button onClick={() => setQty(q => Math.min(p.stock, q + 1))} className="w-9 h-9 bg-gray-50 text-gray-700 border-l border-gray-100 text-lg font-bold hover:bg-gray-100 transition-colors">+</button>
             </div>
-            <span style={{ fontSize: '12px', color: '#6b7280' }}>({p.stock} متاح)</span>
+            <span className="text-xs text-gray-500">({p.stock} متاح)</span>
           </div>
 
           {/* أزرار الشراء */}
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
-            <button onClick={() => { addToCart(p); showPage('cart'); }} style={{ flex: 1, padding: '13px', background: '#1a7c2e', color: 'white', border: 'none', borderRadius: '8px', fontFamily: 'Cairo, sans-serif', fontSize: '15px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }}>
+          <div className="flex flex-col sm:flex-row gap-3.5 mb-5">
+            <button onClick={() => { addToCart({ ...p, qty }); setLocation('/cart'); }} className="flex-1 py-4 bg-primary text-white rounded-xl font-bold text-base shadow-lg shadow-green-100 hover:bg-primary-dark transition-all flex items-center justify-center gap-2" disabled={p.stock === 0}>
               🛒 اطلب الآن
             </button>
-            <button onClick={() => addToCart(p)} style={{ flex: 1, padding: '13px', background: 'white', color: '#1a7c2e', border: '2px solid #1a7c2e', borderRadius: '8px', fontFamily: 'Cairo, sans-serif', fontSize: '15px', fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s' }}>
+            <button onClick={() => addToCart({ ...p, qty })} className="flex-1 py-4 bg-white text-primary border-2 border-primary rounded-xl font-bold text-base hover:bg-green-50 transition-all flex items-center justify-center gap-2" disabled={p.stock === 0}>
               🛒 أضف للسلة
             </button>
           </div>
 
           {/* أزرار ثانوية */}
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '18px' }}>
-            <button onClick={() => toggleWish(p)} style={{ flex: 1, padding: '8px', background: inWish ? '#fee2e2' : '#f4f6f8', color: inWish ? '#d32f2f' : '#374151', border: `1px solid ${inWish ? '#fca5a5' : '#dde1e7'}`, borderRadius: '7px', fontFamily: 'Cairo, sans-serif', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
+          <div className="flex gap-2.5 mb-6">
+            <button onClick={() => toggleWish(p)} className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-colors border ${inWish ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-100' : 'bg-gray-50 text-gray-600 border-gray-100 hover:bg-gray-100'}`}>
               {inWish ? '❤️ في المفضلة' : '🤍 أضف للمفضلة'}
             </button>
-            <button onClick={() => showToast('تم نسخ رابط المنتج', 'success')} style={{ flex: 1, padding: '8px', background: '#f4f6f8', color: '#374151', border: '1px solid #dde1e7', borderRadius: '7px', fontFamily: 'Cairo, sans-serif', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
+            <button onClick={() => showToast('تم نسخ رابط المنتج', 'success')} className="flex-1 py-2.5 bg-gray-50 text-gray-600 border border-gray-100 rounded-xl font-bold text-xs hover:bg-gray-100 transition-colors">
               🔗 مشاركة
             </button>
-            <button onClick={() => showToast('تمت إضافة للمقارنة', 'info')} style={{ flex: 1, padding: '8px', background: '#f4f6f8', color: '#374151', border: '1px solid #dde1e7', borderRadius: '7px', fontFamily: 'Cairo, sans-serif', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
+            <button onClick={() => showToast('تمت إضافة للمقارنة', 'info')} className="flex-1 py-2.5 bg-gray-50 text-gray-600 border border-gray-100 rounded-xl font-bold text-xs hover:bg-gray-100 transition-colors">
               ⚖️ مقارنة
             </button>
           </div>
 
           {/* ضمانات */}
-          <div style={{ display: 'flex', border: '1px solid #eef0f3', borderRadius: '10px', overflow: 'hidden', marginBottom: '18px' }}>
+          <div className="flex border border-gray-100 rounded-xl overflow-hidden mb-6 shadow-sm">
             {[{ icon: '🛡️', title: 'ضمان الجودة', sub: '100% أصلي' }, { icon: '🚚', title: 'توصيل سريع', sub: '2-4 أيام' }, { icon: '↩️', title: 'إرجاع مجاني', sub: '14 يوم' }, { icon: '🔒', title: 'دفع آمن', sub: 'مشفر 100%' }].map((g, i) => (
-              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', padding: '12px 6px', textAlign: 'center', fontSize: '11px', color: '#374151', borderLeft: i > 0 ? '1px solid #eef0f3' : 'none' }}>
-                <span style={{ fontSize: '18px' }}>{g.icon}</span>
-                <strong style={{ fontSize: '12px', fontWeight: 700 }}>{g.title}</strong>
-                <span>{g.sub}</span>
+              <div key={i} className={`flex-1 flex flex-col items-center gap-1.5 p-3 text-center text-xs text-gray-600 ${i > 0 ? 'border-l border-gray-100' : ''}`}>
+                <span className="text-xl">{g.icon}</span>
+                <strong className="text-sm font-bold text-gray-900">{g.title}</strong>
+                <span className="text-[10px] text-gray-400">{g.sub}</span>
               </div>
             ))}
           </div>
 
           {/* الوصف */}
-          <div style={{ background: '#f4f6f8', borderRadius: '10px', padding: '14px', marginBottom: '18px' }}>
-            <div style={{ fontSize: '13px', fontWeight: 800, marginBottom: '8px' }}>📝 وصف المنتج</div>
-            <p style={{ fontSize: '13px', color: '#374151', lineHeight: 1.7, margin: 0 }}>{p.desc}</p>
+          <div className="bg-gray-50 rounded-2xl p-5 mb-6">
+            <div className="text-sm font-black text-gray-900 mb-3">📝 وصف المنتج</div>
+            <p className="text-sm text-gray-700 leading-relaxed font-bold">{p.description}</p>
           </div>
 
           {/* بطاقة البائع */}
-          {seller && (
-            <div style={{ border: '1px solid #eef0f3', borderRadius: '14px', overflow: 'hidden', background: 'white' }}>
-              <div style={{ background: '#edf7f0', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', borderBottom: '1px solid #eef0f3' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: seller.avColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 800, color: 'white' }}>{seller.av}</div>
+          {p.sellerId && ( // تأكد أن لديك بيانات البائع من API
+            <div className="border border-gray-100 rounded-2xl overflow-hidden bg-white shadow-sm">
+              <div className="bg-green-50/50 p-4 flex items-center gap-3 border-b border-gray-100">
+                <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center text-xl font-black text-white shadow-lg shadow-green-100">{p.sellerId.name?.[0] || 'S'}</div>
                 <div>
-                  <div style={{ fontSize: '15px', fontWeight: 800 }}>{seller.name} {seller.verified && '✅'}</div>
-                  <div style={{ fontSize: '12px', color: '#1a7c2e', fontWeight: 600 }}>بائع موثق على ترسترا</div>
+                  <div className="text-lg font-black text-gray-900">{p.sellerId.name} {p.sellerId.role === 'seller' && '✅'}</div>
+                  <div className="text-xs text-primary font-bold mt-0.5">بائع موثق على ترسترا</div>
                 </div>
               </div>
-              <div style={{ display: 'flex', padding: '12px 16px', gap: 0 }}>
-                {[{ val: seller.rating, label: 'التقييم' }, { val: seller.reviews.toLocaleString(), label: 'تقييم' }, { val: seller.sales, label: 'مبيعات' }, { val: seller.responseRate + '%', label: 'استجابة' }].map((s, i) => (
-                  <div key={i} style={{ flex: 1, textAlign: 'center', borderLeft: i > 0 ? '1px solid #eef0f3' : 'none' }}>
-                    <div style={{ fontSize: '16px', fontWeight: 900, color: '#145c22' }}>{s.val}</div>
-                    <div style={{ fontSize: '11px', color: '#6b7280' }}>{s.label}</div>
+              <div className="flex p-4">
+                {[{ val: p.sellerId.rating || 0, label: 'التقييم' }, { val: p.sellerId.reviewsCount || 0, label: 'تقييم' }, { val: p.sellerId.sales || 0, label: 'مبيعات' }].map((s, i) => (
+                  <div key={i} className={`flex-1 text-center ${i > 0 ? 'border-l border-gray-100' : ''}`}>
+                    <div className="text-lg font-black text-primary">{s.val}</div>
+                    <div className="text-[11px] text-gray-400 font-bold">{s.label}</div>
                   </div>
                 ))}
               </div>
-              <div style={{ padding: '10px 16px', display: 'flex', gap: '8px' }}>
-                <button onClick={() => showToast(`تواصل مع ${seller.name}`, 'info')} style={{ flex: 1, padding: '8px', background: '#1a7c2e', color: 'white', border: 'none', borderRadius: '7px', fontFamily: 'Cairo, sans-serif', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>💬 تواصل مع البائع</button>
-                <button onClick={() => showToast(`متجر ${seller.name}`, 'info')} style={{ flex: 1, padding: '8px', background: 'white', color: '#374151', border: '1px solid #dde1e7', borderRadius: '7px', fontFamily: 'Cairo, sans-serif', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>🏪 تصفح المتجر</button>
+              <div className="flex gap-2.5 p-4 pt-2">
+                <button onClick={() => showToast(`تواصل مع ${p.sellerId.name}`, 'info')} className="flex-1 py-2.5 bg-primary text-white rounded-xl font-bold text-xs shadow-lg shadow-green-100 hover:bg-primary-dark transition-all">💬 تواصل مع البائع</button>
+                <button onClick={() => showToast(`متجر ${p.sellerId.name}`, 'info')} className="flex-1 py-2.5 bg-white text-gray-700 border border-gray-200 rounded-xl font-bold text-xs hover:bg-gray-50 transition-all">🏪 تصفح المتجر</button>
               </div>
             </div>
           )}
@@ -194,14 +234,16 @@ export default function ProductPage() {
       </div>
 
       {/* قسم التقييمات */}
-      <ReviewSection productId={p.id} />
+      <div className="bg-gray-50/50 py-10">
+        <ReviewSection productId={p._id} /> {/* استخدام _id للمنتج من API */}
+      </div>
 
       {/* منتجات مشابهة */}
       {related.length > 0 && (
-        <div style={{ padding: '0 24px 32px' }}>
-          <div style={{ fontSize: '17px', fontWeight: 800, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>📦 منتجات مشابهة</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: '14px' }}>
-            {related.map((r, i) => <ProductCard key={r.id} product={r} idx={i} />)}
+        <div className="px-6 py-12">
+          <div className="text-xl font-black mb-6 flex items-center gap-2">📦 منتجات مشابهة قد تعجبك</div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {related.map((r, i) => <ProductCard key={r._id} product={r} idx={i} />)}
           </div>
         </div>
       )}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useApp } from '../contexts/AppContext';
 import { formatPrice } from '../data/products';
+import { useLocation } from 'wouter';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -15,27 +16,13 @@ function ConfirmDialog({
   message, onConfirm, onCancel,
 }: { message: string; onConfirm: () => void; onCancel: () => void }) {
   return (
-    <div style={{
-      position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 10, borderRadius: '14px',
-    }}>
-      <div style={{
-        background: 'white', borderRadius: '12px', padding: '20px 24px',
-        border: '1px solid #eef0f3', textAlign: 'center', minWidth: '220px',
-      }}>
-        <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '6px' }}>تأكيد الحذف</div>
-        <div style={{ fontSize: '12px', color: '#6b7280', marginBottom: '16px' }}>{message}</div>
-        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-          <button onClick={onCancel} style={{
-            padding: '7px 18px', border: '1px solid #dde1e7', background: 'transparent',
-            borderRadius: '8px', fontSize: '12px', cursor: 'pointer',
-          }}>إلغاء</button>
-          <button onClick={onConfirm} style={{
-            padding: '7px 18px', background: '#fef2f2', color: '#dc2626',
-            border: '1px solid #fecaca', borderRadius: '8px', fontSize: '12px',
-            cursor: 'pointer', fontWeight: 700,
-          }}>حذف</button>
+    <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl backdrop-blur-sm">
+      <div className="bg-white rounded-2xl p-6 border border-gray-100 text-center min-w-[280px] shadow-xl">
+        <div className="font-bold text-sm mb-1.5 text-gray-900">تأكيد الحذف</div>
+        <div className="text-xs text-gray-500 mb-5">{message}</div>
+        <div className="flex gap-2 justify-center">
+          <button onClick={onCancel} className="px-5 py-2 border border-gray-200 bg-white rounded-lg text-xs font-bold hover:bg-gray-50 transition-colors">إلغاء</button>
+          <button onClick={onConfirm} className="px-5 py-2 bg-red-50 text-red-600 border border-red-100 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors">تأكيد الحذف</button>
         </div>
       </div>
     </div>
@@ -48,19 +35,12 @@ function StatCard({ icon, label, value, bg, color, trend }: {
   bg: string; color: string; trend?: string; trendUp?: boolean;
 }) {
   return (
-    <div style={{
-      background: 'white', borderRadius: '14px', padding: '14px',
-      border: '1px solid #eef0f3',
-    }}>
-      <div style={{
-        width: '32px', height: '32px', background: bg, borderRadius: '8px',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '16px', marginBottom: '10px',
-      }}>{icon}</div>
-      <div style={{ fontSize: '20px', fontWeight: 900, color }}>{value}</div>
-      <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>{label}</div>
+    <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm transition-all hover:shadow-md">
+      <div className={`w-10 h-10 ${bg} rounded-xl flex items-center justify-center text-xl mb-4`}>{icon}</div>
+      <div className="text-xl font-black mb-0.5" style={{ color }}>{value}</div>
+      <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{label}</div>
       {trend && (
-        <div style={{ fontSize: '10px', color: trend.startsWith('↑') ? '#1a7c2e' : '#dc2626', marginTop: '3px', fontWeight: 700 }}>
+        <div className={`text-[10px] mt-2 font-bold ${trend.startsWith('↑') ? 'text-primary' : 'text-red-500'}`}>
           {trend}
         </div>
       )}
@@ -76,27 +56,21 @@ const MAX_SALE = Math.max(...SALES);
 function BarChart() {
   const [tip, setTip] = useState('مرّر على الأعمدة');
   return (
-    <div style={{
-      background: 'white', borderRadius: '14px', padding: '16px',
-      border: '1px solid #eef0f3', marginBottom: '14px',
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-        <span style={{ fontSize: '13px', fontWeight: 700 }}>المبيعات — آخر 7 أيام</span>
-        <span style={{ fontSize: '11px', color: '#6b7280' }}>{tip}</span>
+    <div className="bg-white rounded-2xl p-5 border border-gray-100 mb-6 shadow-sm">
+      <div className="flex justify-between items-center mb-5">
+        <span className="text-sm font-black text-gray-800">📊 تحليل المبيعات — آخر 7 أيام</span>
+        <span className="text-[10px] font-bold text-primary bg-green-50 px-2 py-1 rounded-md">{tip}</span>
       </div>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '80px' }}>
+      <div className="flex items-end gap-2 h-24">
         {SALES.map((v, i) => (
-          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+          <div key={i} className="flex-1 flex flex-col items-center gap-1.5 group">
             <div
-              style={{
-                width: '100%', height: `${Math.round(v / MAX_SALE * 72)}px`,
-                background: i === 6 ? '#1a7c2e' : '#bbf7d0',
-                borderRadius: '3px 3px 0 0', cursor: 'pointer', transition: 'opacity .2s',
-              }}
+              className={`w-full rounded-t-lg transition-all cursor-pointer group-hover:opacity-80 ${i === 6 ? 'bg-primary shadow-lg shadow-green-100' : 'bg-green-100'}`}
+              style={{ height: `${Math.round(v / MAX_SALE * 100)}%` }}
               onMouseEnter={() => setTip(`${DAYS[i]}: ${v.toLocaleString('ar-DZ')} دج`)}
               onMouseLeave={() => setTip('مرّر على الأعمدة')}
             />
-            <span style={{ fontSize: '9px', color: '#6b7280' }}>{DAYS[i].slice(0, 3)}</span>
+            <span className="text-[9px] font-bold text-gray-400">{DAYS[i].slice(0, 3)}</span>
           </div>
         ))}
       </div>
@@ -107,12 +81,13 @@ function BarChart() {
 // ─── Progress Bar Row ─────────────────────────────────────────────────────────
 function ProgressRow({ label, value, color }: { label: string; value: number; color: string }) {
   return (
-    <div style={{ marginBottom: '8px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#6b7280', marginBottom: '3px' }}>
-        <span>{label}</span><span>{value}%</span>
+    <div className="mb-4">
+      <div className="flex justify-between text-xs font-bold mb-1.5">
+        <span className="text-gray-500">{label}</span>
+        <span className="text-gray-900">{value}%</span>
       </div>
-      <div style={{ height: '6px', borderRadius: '3px', background: '#f3f4f6', overflow: 'hidden' }}>
-        <div style={{ height: '100%', borderRadius: '3px', width: `${value}%`, background: color, transition: 'width .4s' }} />
+      <div className="h-2 rounded-full bg-gray-50 overflow-hidden">
+        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${value}%`, backgroundColor: color }} />
       </div>
     </div>
   );
@@ -128,10 +103,7 @@ const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }>
 function StatusBadge({ status }: { status: string }) {
   const s = STATUS_COLORS[status] ?? { bg: '#f3f4f6', text: '#6b7280', label: status };
   return (
-    <span style={{
-      background: s.bg, color: s.text, padding: '3px 10px',
-      borderRadius: '99px', fontSize: '11px', fontWeight: 700, flexShrink: 0,
-    }}>{s.label}</span>
+    <span className="px-3 py-1 rounded-full text-[10px] font-black whitespace-nowrap" style={{ backgroundColor: s.bg, color: s.text }}>{s.label}</span>
   );
 }
 
@@ -145,101 +117,57 @@ function MarketOverlay({
   const visible = cat === 'الكل' ? products : products.filter(p => p.category === cat);
 
   return (
-    <div style={{
-      position: 'absolute', inset: 0, background: '#f5f7fa',
-      zIndex: 20, borderRadius: '14px', display: 'flex', flexDirection: 'column', overflow: 'hidden',
-    }}>
+    <div className="absolute inset-0 bg-gray-50 z-20 rounded-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
       {/* Header */}
-      <div style={{
-        background: 'white', borderBottom: '1px solid #eef0f3',
-        padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px',
-      }}>
-        <button onClick={onClose} style={{
-          padding: '5px 12px', background: '#edf7f0', color: '#1a7c2e',
-          border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: 'pointer',
-        }}>← رجوع</button>
-        <span style={{ fontSize: '13px', fontWeight: 700 }}>السوق — عرض المدير</span>
-        <span style={{
-          fontSize: '10px', background: '#fef3c7', color: '#d97706',
-          padding: '2px 8px', borderRadius: '99px', fontWeight: 700,
-        }}>وضع المراقبة</span>
+      <div className="bg-white border-b border-gray-100 px-5 py-3.5 flex items-center gap-3">
+        <button onClick={onClose} className="px-4 py-1.5 bg-green-50 text-primary rounded-lg text-xs font-black hover:bg-green-100 transition-colors">← رجوع</button>
+        <span className="text-sm font-black text-gray-800 flex-1">السوق — عرض المدير</span>
+        <span className="text-[10px] bg-amber-50 text-amber-600 px-3 py-1 rounded-full font-black uppercase">وضع المراقبة</span>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', padding: '14px' }}>
+      <div className="flex-1 overflow-y-auto p-5">
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px', marginBottom: '14px' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
           {[
-            { v: products.length, l: 'إجمالي المنتجات', c: '#111827' },
-            { v: products.filter(p => p.status === 'pending').length, l: 'بانتظار الموافقة', c: '#d97706' },
-            { v: 4, l: 'مُبلَّغ عنها', c: '#dc2626' },
+            { v: products.length, l: 'إجمالي المنتجات', c: 'text-gray-900', bg: 'bg-white' },
+            { v: products.filter(p => p.status === 'pending').length, l: 'بانتظار الموافقة', c: 'text-amber-600', bg: 'bg-amber-50/30' },
+            { v: 4, l: 'مُبلَّغ عنها', c: 'text-red-600', bg: 'bg-red-50/30' },
           ].map((s, i) => (
-            <div key={i} style={{
-              background: 'white', border: '1px solid #eef0f3',
-              borderRadius: '10px', padding: '10px 12px', textAlign: 'center',
-            }}>
-              <div style={{ fontSize: '18px', fontWeight: 900, color: s.c }}>{s.v}</div>
-              <div style={{ fontSize: '10px', color: '#6b7280', marginTop: '2px' }}>{s.l}</div>
+            <div key={i} className={`${s.bg} border border-gray-100 rounded-xl p-4 text-center shadow-sm`}>
+              <div className={`text-xl font-black ${s.c}`}>{s.v}</div>
+              <div className="text-[10px] font-bold text-gray-400 mt-1 uppercase">{s.l}</div>
             </div>
           ))}
         </div>
 
         {/* Category filter */}
-        <div style={{ display: 'flex', gap: '6px', marginBottom: '14px', flexWrap: 'wrap' }}>
+        <div className="flex gap-2 mb-5 flex-wrap">
           {MARKET_CATS.map(c => (
-            <button key={c} onClick={() => setCat(c)} style={{
-              padding: '4px 12px', borderRadius: '99px', fontSize: '11px', cursor: 'pointer',
-              border: '1px solid',
-              background: cat === c ? '#edf7f0' : 'white',
-              color: cat === c ? '#1a7c2e' : '#6b7280',
-              borderColor: cat === c ? '#edf7f0' : '#dde1e7',
-              fontFamily: 'Cairo, sans-serif',
-              transition: 'all .15s',
-            }}>{c}</button>
+            <button key={c} onClick={() => setCat(c)} className={`px-4 py-1.5 rounded-full text-[11px] font-bold transition-all border ${cat === c ? 'bg-primary border-primary text-white shadow-md shadow-green-100' : 'bg-white border-gray-100 text-gray-500 hover:border-primary hover:text-primary'}`}>{c}</button>
           ))}
         </div>
 
         {/* Product grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '10px' }}>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5">
           {visible.map(p => (
-            <div key={p._id} style={{
-              background: 'white', border: '1px solid #eef0f3',
-              borderRadius: '12px', overflow: 'hidden',
-            }}>
-              <div style={{
-                height: '70px', background: '#f5f7fa',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px',
-              }}>📦</div>
-              <div style={{ padding: '8px 10px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 700 }}>{p.name}</div>
-                <div style={{ fontSize: '10px', color: '#6b7280' }}>{p.category ?? '—'}</div>
-                <div style={{ fontSize: '12px', fontWeight: 900, color: '#1a7c2e', marginTop: '4px' }}>
-                  {formatPrice(p.price)}
+            <div key={p._id} className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm flex flex-col group transition-all hover:shadow-md">
+              <div className="h-24 bg-gray-50 flex items-center justify-center text-4xl group-hover:scale-110 transition-transform">📦</div>
+              <div className="p-3.5 flex-1 flex flex-col">
+                <div className="text-[11px] font-black text-gray-900 line-clamp-1">{p.name}</div>
+                <div className="text-[9px] font-bold text-gray-400 mt-0.5">{p.category ?? 'بدون فئة'}</div>
+                <div className="text-sm font-black text-primary mt-2">{formatPrice(p.price)} دج</div>
+                <div className="text-[9px] text-gray-400 mt-1 border-t border-gray-50 pt-1.5 flex justify-between items-center">
+                  <span>بائع: {p.sellerId?.slice(-6)}</span>
+                  {p.status && (
+                    <span className={`px-2 py-0.5 rounded-full font-black ${p.status === 'active' ? 'bg-green-50 text-primary' : 'bg-amber-50 text-amber-600'}`}>
+                      {p.status === 'active' ? 'نشط' : 'معلّق'}
+                    </span>
+                  )}
                 </div>
-                <div style={{ fontSize: '10px', color: '#6b7280', marginTop: '2px' }}>
-                  بائع: {p.sellerId?.slice(-6)}
-                </div>
-                {p.status && (
-                  <span style={{
-                    fontSize: '9px', padding: '2px 6px', borderRadius: '99px', marginTop: '4px',
-                    display: 'inline-block',
-                    background: p.status === 'active' ? '#edf7f0' : '#fef3c7',
-                    color: p.status === 'active' ? '#1a7c2e' : '#d97706',
-                  }}>
-                    {p.status === 'active' ? 'نشط' : 'معلّق'}
-                  </span>
-                )}
               </div>
-              <div style={{ display: 'flex', gap: '4px', padding: '0 10px 8px' }}>
-                <button style={{
-                  flex: 1, padding: '5px', background: '#edf7f0', color: '#1a7c2e',
-                  border: 'none', borderRadius: '6px', fontSize: '10px',
-                  cursor: 'pointer', fontFamily: 'Cairo, sans-serif', fontWeight: 700,
-                }}>✓ موافقة</button>
-                <button style={{
-                  flex: 1, padding: '5px', background: '#fef2f2', color: '#dc2626',
-                  border: 'none', borderRadius: '6px', fontSize: '10px',
-                  cursor: 'pointer', fontFamily: 'Cairo, sans-serif',
-                }}>✕ إزالة</button>
+              <div className="flex gap-1.5 p-3 pt-0">
+                <button className="flex-1 py-1.5 bg-green-50 text-primary rounded-lg text-[10px] font-black hover:bg-primary hover:text-white transition-all">✓ موافقة</button>
+                <button className="flex-1 py-1.5 bg-red-50 text-red-600 rounded-lg text-[10px] font-black hover:bg-red-500 hover:text-white transition-all">✕ إزالة</button>
               </div>
             </div>
           ))}
@@ -251,7 +179,8 @@ function MarketOverlay({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function ManagerDashboard() {
-  const { user, token, showPage, showToast, logout } = useApp();
+  const { user, token, showToast, logout } = useApp();
+  const [, setLocation] = useLocation();
   const [section, setSection]       = useState<Section>('overview');
   const [users, setUsers]           = useState<User[]>([]);
   const [orders, setOrders]         = useState<Order[]>([]);
@@ -325,65 +254,28 @@ export default function ManagerDashboard() {
       && (!userRole || u.role === userRole);
   }), [users, userSearch, userRole]);
 
-  // ── Shared styles ─────────────────────────────────────────────────────────
-  const card: React.CSSProperties = {
-    background: 'white', borderRadius: '12px', padding: '12px 14px',
-    border: '1px solid #eef0f3', display: 'flex', alignItems: 'center',
-    gap: '10px', marginBottom: '8px',
-  };
-
-  const inputStyle: React.CSSProperties = {
-    flex: 1, padding: '7px 10px', background: 'white',
-    border: '1px solid #dde1e7', borderRadius: '8px',
-    fontSize: '13px', fontFamily: 'Cairo, sans-serif', outline: 'none',
-  };
-
-  const selectStyle: React.CSSProperties = {
-    padding: '7px 10px', background: 'white', border: '1px solid #dde1e7',
-    borderRadius: '8px', fontSize: '12px', fontFamily: 'Cairo, sans-serif', outline: 'none', cursor: 'pointer',
-  };
-
   const navItem = (key: Section, icon: string, label: string, badge?: number) => (
-    <button key={key} onClick={() => setSection(key)} style={{
-      width: '100%', padding: '10px 16px', border: 'none', textAlign: 'right',
-      background: section === key ? '#edf7f0' : 'transparent',
-      color: section === key ? '#1a7c2e' : '#374151',
-      fontFamily: 'Cairo, sans-serif', fontSize: '13px',
-      fontWeight: section === key ? 700 : 500, cursor: 'pointer',
-      display: 'flex', alignItems: 'center', gap: '8px',
-      borderRight: section === key ? '3px solid #1a7c2e' : '3px solid transparent',
-    }}>
-      <span style={{ fontSize: '14px', width: '18px', textAlign: 'center' }}>{icon}</span>
-      {label}
+    <button key={key} onClick={() => setSection(key)} className={`w-full px-5 py-3 flex items-center gap-3 transition-all border-r-4 ${section === key ? 'bg-green-50 text-primary border-primary font-black' : 'bg-transparent text-gray-600 border-transparent hover:bg-gray-50'}`}>
+      <span className="text-lg w-6 flex justify-center">{icon}</span>
+      <span className="flex-1 text-right text-sm">{label}</span>
       {badge !== undefined && badge > 0 && (
-        <span style={{
-          marginRight: 'auto', background: '#fef3c7', color: '#d97706',
-          fontSize: '10px', padding: '1px 7px', borderRadius: '99px', fontWeight: 700,
-        }}>{badge}</span>
+        <span className="bg-amber-100 text-amber-600 text-[10px] px-2 py-0.5 rounded-full font-black">{badge}</span>
       )}
     </button>
   );
 
-  // ─────────────────────────────────────────────────────────────────────────
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f5f7fa', direction: 'rtl', position: 'relative' }}>
-
+    <div className="flex min-h-screen bg-gray-50 font-cairo" dir="rtl">
+      
       {/* ── Sidebar ─────────────────────────────────────────────────── */}
-      <div style={{
-        width: '220px', background: 'white', borderLeft: '1px solid #eef0f3',
-        padding: '0', flexShrink: 0, display: 'flex', flexDirection: 'column',
-      }}>
-        <div style={{ padding: '18px 16px 14px', borderBottom: '1px solid #eef0f3' }}>
-          <div style={{
-            width: '40px', height: '40px', background: '#edf7f0', borderRadius: '50%',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '20px', marginBottom: '8px',
-          }}>👑</div>
-          <div style={{ fontWeight: 800, fontSize: '14px' }}>{user?.name ?? 'ياسين'}</div>
-          <div style={{ fontSize: '12px', color: '#6b7280' }}>مدير المنصة</div>
+      <div className="w-64 bg-white border-l border-gray-100 flex flex-col sticky top-0 h-screen shadow-sm z-30">
+        <div className="p-6 border-b border-gray-50">
+          <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-2xl mb-3 shadow-sm shadow-green-100">👑</div>
+          <div className="font-black text-base text-gray-900">{user?.name ?? 'ياسين'}</div>
+          <div className="text-xs font-bold text-primary mt-0.5">مدير المنصة</div>
         </div>
 
-        <nav style={{ padding: '10px 0', flex: 1 }}>
+        <nav className="py-6 flex-1">
           {navItem('overview',  '📊', 'الإحصائيات')}
           {navItem('orders',    '🛒', 'الطلبات',      pendingCount)}
           {navItem('products',  '📦', 'المنتجات')}
@@ -391,51 +283,46 @@ export default function ManagerDashboard() {
         </nav>
 
         {/* دخول السوق */}
-        <div style={{ padding: '0 12px 10px' }}>
-          <button onClick={() => { setMarketCat('الكل'); setMarketOpen(true); }} style={{
-            width: '100%', padding: '10px', background: '#1a7c2e', color: 'white',
-            border: 'none', borderRadius: '10px', fontFamily: 'Cairo, sans-serif',
-            fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex',
-            alignItems: 'center', justifyContent: 'center', gap: '6px',
-          }}>🏪 دخول السوق</button>
+        <div className="px-5 pb-4">
+          <button onClick={() => { setMarketCat('الكل'); setMarketOpen(true); }} className="w-full py-3 bg-primary text-white rounded-xl text-xs font-black shadow-lg shadow-green-100 transition-all hover:bg-primary-dark flex items-center justify-center gap-2">
+            🏪 دخول السوق
+          </button>
         </div>
 
-        <div style={{ padding: '12px', borderTop: '1px solid #eef0f3' }}>
-          <button onClick={() => { logout(); showPage('home'); }} style={{
-            width: '100%', padding: '9px', background: '#fef2f2', color: '#dc2626',
-            border: 'none', borderRadius: '8px', fontFamily: 'Cairo, sans-serif',
-            fontSize: '12px', fontWeight: 700, cursor: 'pointer',
-          }}>🚪 تسجيل الخروج</button>
+        <div className="p-5 border-t border-gray-50">
+          <button onClick={() => { logout(); setLocation('/'); }} className="w-full py-2.5 bg-red-50 text-red-600 rounded-lg text-xs font-black transition-colors hover:bg-red-100">
+            🚪 تسجيل الخروج
+          </button>
         </div>
       </div>
 
       {/* ── Main area ────────────────────────────────────────────────── */}
-      <div style={{ flex: 1, padding: '28px 24px', overflow: 'auto' }}>
+      <div className="flex-1 p-8 overflow-y-auto max-w-[1400px] mx-auto w-full">
 
         {/* ── Overview ──────────────────────────────────────────────── */}
         {section === 'overview' && (
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: 900, marginBottom: '18px' }}>📊 إحصائيات المنصة</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(160px,1fr))', gap: '12px', marginBottom: '20px' }}>
-              <StatCard icon="👥" label="المستخدمون" value={users.length || '+50K'} bg="#edf7f0" color="#1a7c2e" trend="↑ 12% هذا الشهر" />
-              <StatCard icon="🏪" label="البائعون"   value={sellers.length || '+3K'}  bg="#dbeafe" color="#1d4ed8" trend="↑ 8%" />
-              <StatCard icon="🛒" label="الطلبات"    value={orders.length}             bg="#fef3c7" color="#d97706" trend="↑ 5%" />
-              <StatCard icon="💰" label="الإيرادات"  value={formatPrice(totalRevenue)} bg="#fce7f3" color="#db2777" trend="↑ 18%" />
-              <StatCard icon="📦" label="المنتجات"   value={products.length}           bg="#f3e8ff" color="#7c3aed" />
-              <StatCard icon="⏳" label="طلبات معلّقة" value={pendingCount}            bg="#fff7ed" color="#ea580c" trend={pendingCount > 0 ? '↑ تحتاج مراجعة' : undefined} />
+            <h2 className="text-xl font-black mb-6 text-gray-900">📊 إحصائيات المنصة الشاملة</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+              <StatCard icon="👥" label="المستخدمون" value={users.length || '+50K'} bg="bg-green-50" color="#1a7c2e" trend="↑ 12% هذا الشهر" />
+              <StatCard icon="🏪" label="البائعون"   value={sellers.length || '+3K'}  bg="bg-blue-50" color="#1d4ed8" trend="↑ 8%" />
+              <StatCard icon="🛒" label="الطلبات"    value={orders.length}             bg="bg-amber-50" color="#d97706" trend="↑ 5%" />
+              <StatCard icon="💰" label="الإيرادات"  value={formatPrice(totalRevenue)} bg="bg-pink-50" color="#db2777" trend="↑ 18%" />
+              <StatCard icon="📦" label="المنتجات"   value={products.length}           bg="bg-purple-50" color="#7c3aed" />
+              <StatCard icon="⏳" label="طلبات معلّقة" value={pendingCount}            bg="bg-orange-50" color="#ea580c" trend={pendingCount > 0 ? '↑ تحتاج مراجعة' : undefined} />
             </div>
 
             <BarChart />
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-              <div style={{ background: 'white', borderRadius: '14px', padding: '16px', border: '1px solid #eef0f3' }}>
-                <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '12px' }}>توزيع الطلبات</div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                <div className="text-sm font-black mb-5 text-gray-800">توزيع حالات الطلبات</div>
                 <ProgressRow label="مكتمل" value={65} color="#1a7c2e" />
                 <ProgressRow label="معلّق"  value={23} color="#d97706" />
                 <ProgressRow label="ملغى"   value={12} color="#dc2626" />
               </div>
-              <div style={{ background: 'white', borderRadius: '14px', padding: '16px', border: '1px solid #eef0f3' }}>
-                <div style={{ fontSize: '13px', fontWeight: 700, marginBottom: '12px' }}>أكثر الفئات مبيعاً</div>
+              <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                <div className="text-sm font-black mb-5 text-gray-800">أكثر الفئات مبيعاً (رائد)</div>
                 <ProgressRow label="خضروات"     value={38} color="#1a7c2e" />
                 <ProgressRow label="فواكه"       value={25} color="#1a7c2e" />
                 <ProgressRow label="لحوم"        value={20} color="#1a7c2e" />
@@ -447,7 +334,7 @@ export default function ManagerDashboard() {
 
         {/* ── Orders ────────────────────────────────────────────────── */}
         {section === 'orders' && (
-          <div style={{ position: 'relative' }}>
+          <div className="relative">
             {confirmOrder && (
               <ConfirmDialog
                 message="هذا الإجراء لا يمكن التراجع عنه"
@@ -455,48 +342,46 @@ export default function ManagerDashboard() {
                 onCancel={() => setConfirmOrder(null)}
               />
             )}
-            <h2 style={{ fontSize: '18px', fontWeight: 900, marginBottom: '16px' }}>
+            <h2 className="text-xl font-black mb-6 text-gray-900">
               🛒 جميع الطلبات ({filteredOrders.length})
             </h2>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+            <div className="flex flex-col sm:flex-row gap-3 mb-6">
               <input
-                style={inputStyle} placeholder="بحث برقم الطلب..."
+                className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors" placeholder="بحث برقم الطلب..."
                 value={orderSearch} onChange={e => setOrderSearch(e.target.value)}
               />
-              <select style={selectStyle} value={orderStatus} onChange={e => setOrderStatus(e.target.value)}>
+              <select className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold outline-none cursor-pointer" value={orderStatus} onChange={e => setOrderStatus(e.target.value)}>
                 <option value="">كل الحالات</option>
                 <option value="pending">معلّق</option>
                 <option value="completed">مكتمل</option>
                 <option value="cancelled">ملغى</option>
               </select>
             </div>
-            {filteredOrders.length === 0
-              ? <div style={{ textAlign: 'center', padding: '50px', color: '#6b7280' }}>لا توجد طلبات مطابقة</div>
-              : filteredOrders.map(o => (
-                <div key={o._id} style={card}>
-                  <div style={{ width: '36px', height: '36px', background: '#fef3c7', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>🛒</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: '13px' }}>{o._id.slice(-8).toUpperCase()}</div>
-                    <div style={{ fontSize: '11px', color: '#6b7280' }}>{new Date(o.createdAt).toLocaleDateString('ar-DZ')}</div>
+            <div className="space-y-3">
+              {filteredOrders.length === 0
+                ? <div className="text-center py-16 text-gray-400 font-bold">لا توجد طلبات مطابقة</div>
+                : filteredOrders.map(o => (
+                  <div key={o._id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
+                    <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-lg flex-shrink-0">🛒</div>
+                    <div className="flex-1">
+                      <div className="font-black text-sm text-gray-900 tracking-wider">#{o._id.slice(-8).toUpperCase()}</div>
+                      <div className="text-[10px] text-gray-400 font-bold mt-1 uppercase">{new Date(o.createdAt).toLocaleDateString('ar-DZ')}</div>
+                    </div>
+                    <StatusBadge status={o.status} />
+                    <div className="font-black text-primary text-sm min-w-[100px] text-left">
+                      {formatPrice(o.totalAmount)} دج
+                    </div>
+                    <button onClick={() => setConfirmOrder(o._id)} className="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-[11px] font-black hover:bg-red-100 transition-colors">حذف</button>
                   </div>
-                  <StatusBadge status={o.status} />
-                  <div style={{ fontWeight: 900, color: '#1a7c2e', minWidth: '90px', textAlign: 'left', fontSize: '13px' }}>
-                    {formatPrice(o.totalAmount)}
-                  </div>
-                  <button onClick={() => setConfirmOrder(o._id)} style={{
-                    padding: '5px 12px', background: '#fef2f2', color: '#dc2626',
-                    border: 'none', borderRadius: '8px', fontFamily: 'Cairo, sans-serif',
-                    fontSize: '11px', fontWeight: 700, cursor: 'pointer',
-                  }}>حذف</button>
-                </div>
-              ))
-            }
+                ))
+              }
+            </div>
           </div>
         )}
 
         {/* ── Products ──────────────────────────────────────────────── */}
         {section === 'products' && (
-          <div style={{ position: 'relative' }}>
+          <div className="relative">
             {confirmProduct && (
               <ConfirmDialog
                 message="هذا الإجراء لا يمكن التراجع عنه"
@@ -504,103 +389,84 @@ export default function ManagerDashboard() {
                 onCancel={() => setConfirmProduct(null)}
               />
             )}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 900 }}>📦 جميع المنتجات ({filteredProducts.length})</h2>
-              <button onClick={() => { setMarketCat('الكل'); setMarketOpen(true); }} style={{
-                padding: '8px 16px', background: '#1a7c2e', color: 'white',
-                border: 'none', borderRadius: '8px', fontFamily: 'Cairo, sans-serif',
-                fontSize: '12px', fontWeight: 700, cursor: 'pointer',
-              }}>🏪 فحص في السوق</button>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-black text-gray-900">📦 مستودع المنتجات ({filteredProducts.length})</h2>
+              <button onClick={() => { setMarketCat('الكل'); setMarketOpen(true); }} className="px-5 py-2.5 bg-primary text-white rounded-xl text-xs font-black shadow-lg shadow-green-100 transition-all hover:bg-primary-dark">🏪 فحص في السوق</button>
             </div>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+            <div className="mb-6">
               <input
-                style={inputStyle} placeholder="بحث بالاسم أو الفئة..."
+                className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors" placeholder="بحث بالاسم أو الفئة..."
                 value={productSearch} onChange={e => setProductSearch(e.target.value)}
               />
             </div>
-            {filteredProducts.length === 0
-              ? <div style={{ textAlign: 'center', padding: '50px', color: '#6b7280' }}>لا توجد منتجات مطابقة</div>
-              : filteredProducts.map(p => (
-                <div key={p._id} style={card}>
-                  <div style={{ width: '36px', height: '36px', background: '#edf7f0', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>📦</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: '13px' }}>{p.name}</div>
-                    <div style={{ fontSize: '11px', color: '#6b7280' }}>
-                      {p.category ? `${p.category} · ` : ''}بائع: {p.sellerId?.slice(-6)}
+            <div className="space-y-3">
+              {filteredProducts.length === 0
+                ? <div className="text-center py-16 text-gray-400 font-bold">لا توجد منتجات مطابقة</div>
+                : filteredProducts.map(p => (
+                  <div key={p._id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
+                    <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center text-lg flex-shrink-0">📦</div>
+                    <div className="flex-1">
+                      <div className="font-black text-sm text-gray-900 line-clamp-1">{p.name}</div>
+                      <div className="text-[10px] text-gray-400 font-bold mt-1">
+                        {p.category ? `${p.category} · ` : ''}بائع: <span className="text-primary tracking-widest">{p.sellerId?.slice(-6).toUpperCase()}</span>
+                      </div>
                     </div>
+                    {p.status && (
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black ${p.status === 'active' ? 'bg-green-50 text-primary' : 'bg-amber-50 text-amber-600'}`}>
+                        {p.status === 'active' ? 'نشط' : 'معلّق'}
+                      </span>
+                    )}
+                    <div className="font-black text-primary text-sm min-w-[90px] text-left">{formatPrice(p.price)} دج</div>
+                    <button
+                      onClick={() => { setMarketCat(p.category ?? 'الكل'); setMarketOpen(true); }}
+                      className="px-4 py-2 bg-green-50 text-primary rounded-lg text-[10px] font-black hover:bg-primary hover:text-white transition-all"
+                    >فحص ↗</button>
+                    <button onClick={() => setConfirmProduct(p._id)} className="px-4 py-2 bg-red-50 text-red-600 rounded-lg text-[10px] font-black hover:bg-red-100 transition-colors">حذف</button>
                   </div>
-                  {p.status && (
-                    <span style={{
-                      background: p.status === 'active' ? '#edf7f0' : '#fef3c7',
-                      color: p.status === 'active' ? '#1a7c2e' : '#d97706',
-                      padding: '3px 10px', borderRadius: '99px', fontSize: '11px', fontWeight: 700,
-                    }}>
-                      {p.status === 'active' ? 'نشط' : 'معلّق'}
-                    </span>
-                  )}
-                  <div style={{ fontWeight: 900, color: '#1a7c2e', fontSize: '13px' }}>{formatPrice(p.price)}</div>
-                  <button
-                    onClick={() => { setMarketCat(p.category ?? 'الكل'); setMarketOpen(true); }}
-                    style={{
-                      padding: '5px 10px', background: '#edf7f0', color: '#1a7c2e',
-                      border: 'none', borderRadius: '8px', fontFamily: 'Cairo, sans-serif',
-                      fontSize: '11px', fontWeight: 700, cursor: 'pointer',
-                    }}>فحص ↗</button>
-                  <button onClick={() => setConfirmProduct(p._id)} style={{
-                    padding: '5px 12px', background: '#fef2f2', color: '#dc2626',
-                    border: 'none', borderRadius: '8px', fontFamily: 'Cairo, sans-serif',
-                    fontSize: '11px', fontWeight: 700, cursor: 'pointer',
-                  }}>حذف</button>
-                </div>
-              ))
-            }
+                ))
+              }
+            </div>
           </div>
         )}
 
         {/* ── Users ─────────────────────────────────────────────────── */}
         {section === 'users' && (
           <div>
-            <h2 style={{ fontSize: '18px', fontWeight: 900, marginBottom: '16px' }}>👥 المستخدمون ({filteredUsers.length})</h2>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+            <h2 className="text-xl font-black mb-6 text-gray-900">👥 قاعدة بيانات المستخدمين ({filteredUsers.length})</h2>
+            <div className="flex flex-col sm:flex-row gap-3 mb-6">
               <input
-                style={inputStyle} placeholder="بحث بالاسم أو البريد..."
+                className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold outline-none focus:border-primary transition-colors" placeholder="بحث بالاسم أو البريد..."
                 value={userSearch} onChange={e => setUserSearch(e.target.value)}
               />
-              <select style={selectStyle} value={userRole} onChange={e => setUserRole(e.target.value)}>
+              <select className="px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-xs font-bold outline-none cursor-pointer" value={userRole} onChange={e => setUserRole(e.target.value)}>
                 <option value="">كل الأدوار</option>
                 <option value="seller">بائع</option>
                 <option value="buyer">زبون</option>
                 <option value="admin">مدير</option>
               </select>
             </div>
-            {filteredUsers.length === 0
-              ? <div style={{ textAlign: 'center', padding: '50px', color: '#6b7280' }}>لا توجد نتائج</div>
-              : filteredUsers.map(u => (
-                <div key={u._id} style={card}>
-                  <div style={{
-                    width: '36px', height: '36px', borderRadius: '50%',
-                    background: u.role === 'seller' ? '#dbeafe' : u.role === 'admin' ? '#edf7f0' : '#f3f4f6',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px',
-                  }}>
-                    {u.role === 'seller' ? '🏪' : u.role === 'admin' ? '👑' : '👤'}
+            <div className="space-y-3">
+              {filteredUsers.length === 0
+                ? <div className="text-center py-16 text-gray-400 font-bold">لا توجد نتائج مطابقة</div>
+                : filteredUsers.map(u => (
+                  <div key={u._id} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 ${u.role === 'seller' ? 'bg-blue-50' : u.role === 'admin' ? 'bg-green-50' : 'bg-gray-50'}`}>
+                      {u.role === 'seller' ? '🏪' : u.role === 'admin' ? '👑' : '👤'}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-black text-sm text-gray-900">{u.name}</div>
+                      <div className="text-[10px] text-gray-400 font-bold mt-0.5 uppercase">{u.email}</div>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black ${u.role === 'seller' ? 'bg-blue-50 text-blue-600' : u.role === 'admin' ? 'bg-green-50 text-primary' : 'bg-gray-100 text-gray-500'}`}>
+                      {u.role === 'seller' ? 'بائع' : u.role === 'admin' ? 'مدير' : 'زبون'}
+                    </span>
+                    <div className="text-[10px] text-gray-400 font-black min-w-[80px] text-left">
+                      {new Date(u.createdAt).toLocaleDateString('ar-DZ')}
+                    </div>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: '13px' }}>{u.name}</div>
-                    <div style={{ fontSize: '11px', color: '#6b7280' }}>{u.email}</div>
-                  </div>
-                  <span style={{
-                    background: u.role === 'seller' ? '#dbeafe' : '#edf7f0',
-                    color: u.role === 'seller' ? '#1d4ed8' : '#1a7c2e',
-                    padding: '3px 10px', borderRadius: '99px', fontSize: '11px', fontWeight: 700,
-                  }}>
-                    {u.role === 'seller' ? 'بائع' : u.role === 'admin' ? 'مدير' : 'زبون'}
-                  </span>
-                  <div style={{ fontSize: '11px', color: '#6b7280' }}>
-                    {new Date(u.createdAt).toLocaleDateString('ar-DZ')}
-                  </div>
-                </div>
-              ))
-            }
+                ))
+              }
+            </div>
           </div>
         )}
       </div>

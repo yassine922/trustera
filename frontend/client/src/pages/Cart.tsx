@@ -1,5 +1,6 @@
 import { useApp } from '../contexts/AppContext';
 import { useEffect, useState } from 'react';
+import { useLocation } from 'wouter';
 
 const CART_STORAGE_KEY = 'trustera_cart_v2';
 
@@ -45,10 +46,10 @@ export default function Cart() {
     updateQty, 
     clearCart, 
     cartTotal, 
-    showPage, 
     showToast,
     setCart 
   } = useApp();
+  const [, setLocation] = useLocation();
   
   const { isLoaded, persistCart, clearPersistedCart, loadSavedCart } = usePersistedCart();
   const shipping = 400;
@@ -224,59 +225,45 @@ export default function Cart() {
           ))}
         </div>
 
-        <div style={{ width: '300px', flexShrink: 0, position: 'sticky', top: '130px' }}>
-          <div style={{ background: 'white', borderRadius: '12px', padding: '20px', border: '1px solid #eef0f3' }}>
-            <div style={{ fontSize: '16px', fontWeight: 800, marginBottom: '16px', paddingBottom: '12px', borderBottom: '2px solid #eef0f3' }}>
+        <div className="w-full lg:w-[320px] lg:sticky lg:top-32">
+          <div className="bg-white rounded-2xl p-5 border border-gray-100">
+            <div className="text-base font-black mb-4 pb-3 border-b-2 border-gray-50 text-gray-900">
               ملخص الطلب
             </div>
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '14px' }}>
-              <span>المجموع الفرعي</span>
-              <span style={{ fontWeight: 700 }}>{formatPrice(cartTotal)} دج</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '14px' }}>
-              <span>الشحن</span>
-              <span style={{ color: '#1a7c2e', fontWeight: 700 }}>{formatPrice(shipping)} دج</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', paddingTop: '12px', borderTop: '2px solid #eef0f3', fontSize: '16px', fontWeight: 900 }}>
-              <span>الإجمالي</span>
-              <span style={{ color: '#145c22' }}>{formatPrice(total)} دج</span>
+            <div className="space-y-3 mb-5 text-sm">
+              <div className="flex justify-between text-gray-500">
+                <span>المجموع الفرعي</span>
+                <span className="font-bold text-gray-900">{formatPrice(cartTotal)} دج</span>
+              </div>
+              <div className="flex justify-between text-gray-500">
+                <span>الشحن</span>
+                <span className="text-primary font-bold">{formatPrice(shipping)} دج</span>
+              </div>
+              <div className="pt-3 border-t-2 border-gray-50 flex justify-between text-lg font-black text-primary">
+                <span>الإجمالي</span>
+                <span>{formatPrice(total)} دج</span>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}>
+            <div className="flex gap-2 mb-4">
               <input 
                 type="text" 
                 placeholder="رمز الخصم..." 
-                style={{ flex: 1, padding: '8px 10px', border: '1px solid #dde1e7', borderRadius: '7px', fontFamily: 'Cairo, sans-serif', fontSize: '12px', outline: 'none' }} 
+                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg font-cairo text-xs focus:border-primary outline-none" 
               />
               <button 
                 onClick={() => showToast('رمز غير صحيح', 'warning')} 
-                style={{ padding: '8px 12px', background: '#f4f6f8', border: '1px solid #dde1e7', borderRadius: '7px', fontFamily: 'Cairo, sans-serif', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}
+                className="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-bold"
               >
                 تطبيق
               </button>
             </div>
 
-            <button 
-              onClick={() => showPage('checkout')} 
-              style={{ 
-                width: '100%', 
-                padding: '13px', 
-                background: '#1a7c2e', 
-                color: 'white', 
-                border: 'none', 
-                borderRadius: '8px', 
-                fontFamily: 'Cairo, sans-serif', 
-                fontSize: '15px', 
-                fontWeight: 800, 
-                cursor: 'pointer',
-                marginBottom: '8px'
-              }}
-            >
+            <button onClick={() => setLocation('/checkout')} className="w-full py-3.5 bg-primary text-white rounded-xl font-bold text-base hover:bg-primary-dark transition-all shadow-lg shadow-green-100 mb-3">
               💳 إتمام الطلب
             </button>
-
-            <div style={{ textAlign: 'center', fontSize: '12px', color: '#6b7280' }}>
+            <div className="text-center text-[11px] text-gray-400">
               🔒 دفع آمن ومحمي
             </div>
           </div>

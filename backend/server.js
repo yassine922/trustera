@@ -1,43 +1,116 @@
-// ===== الخادم الرئيسي =====
-
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
 require('dotenv').config();
+const express = require('express');
+const http = require('http');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const { Server } = require('socket.io');
+
+const authRoutes = require('./auth').router;
+const productRoutes = require('./products');
+const orderRoutes = require('./orders');
+const notificationRoutes = require('./notifications'); // تم التحديث (مسار جديد للإشعارات)
+const reviewRoutes = require('./reviews'); // تم التحديث (مسار جديد للتقييمات)
+// تأكد أنك تستورد نماذج Mongoose لكي يتم تسجيلها قبل أي استعلامات
+require('./models/User');
+require('./models/Product');
+require('./models/Order');
+require('./models/Notification');
+require('./models/Review');
+
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: { origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] }
+});
 
-// ===== الاتصال بـ MongoDB =====
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('✅ MongoDB متصل'))
-    .catch(err => console.error('❌ خطأ في الاتصال:', err));
+// إعداد Socket.io وإتاحته للـ Routes
+app.set('io', io);
 
-// ===== Middleware =====
-app.use(cors());
-app.use(express.json());
+io.on('connection', (socket) => {
+    console.log('مستخدم متصل:', socket.id);
+    
+    // يمكن هنا إضافة منطق المصادقة للـ Socket.io (مثال: التحقق من التوكن)
+    // if (!socket.handshake.auth || !socket.handshake.auth.token) {
+    //     console.log('Socket: توكن غير موجود');
+    //     socket.disconnect(true);
+    //     return;
+    // }
+    // try {
+    //     const decoded = jwt.verify(socket.handshake.auth.token, process.env.JWT_SECRET);
+    //     socket.user = decoded; // تخزين معلومات المستخدم في كائن الـ socket
+    //     console.log(`Socket: المستخدم ${socket.user.id} مصادق`);
+    // } catch (err) {
+    //     console.log('Socket: توكن غير صالح');
+    //     socket.disconnect(true);
+    //     return;
+    // }
 
-// ===== خدمة الملفات الثابتة =====
-app.use(express.static('frontend'));
 
-// ===== المسارات =====
-app.use('/api/auth', require('./auth/index'));
-app.use('/api/products', require('./products/index'));
-app.use('/api/orders', require('./orders/index'));
-app.use('/api/points', require('./points/index'));
-app.use('/api/payments', require('./payments/index'));
+    socket.on('join', (userId) => {
+        socket.join(userId);
+        console.log(`المستخدم ${userId} انضم لغرفته الخاصة`);
+    });
 
-// ===== معالج الأخطاء =====
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({
-        success: false,
-        message: 'حدث خطأ في الخادم',
-        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    socket.on('disconnect', () => {
+        console.log('انقطع الاتصال');
     });
 });
 
-// ===== بدء الخادم =====
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`🚀 الخادم يعمل على المنفذ ${PORT}`);
+// Middlewares
+app.use(cors());
+app.use(express.json({ limit: '5mb' })); // لدعم صور Base64
+
+// ربط المسارات
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/notifications', notificationRoutes); // تم التحديث
+app.use('/api/reviews', reviewRoutes); // تم التحديث
+// يمكنك إضافة مسارات أخرى هنا مثل points, payments إذا كانت موجودة
+
+// ===== معالج الأخطاء العام (Global Error Handler) =====
+// يجب أن يأتي بعد جميع المسارات والـ middlewares الأخرى
+app.use((err, req, res, next) => {
+    console.error(err.stack); // تسجيل الخطأ في الـ console
+    res.status(500).json({
+        success: false,
+        message: 'حدث خطأ غير متوقع في الخادم!',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined // عرض تفاصيل الخطأ في وضع التطوير فقط
+    });
 });
+
+// الاتصال بقاعدة البيانات والتشغيل
+const PORT = process.env.PORT || 5000;
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => {
+        console.log('✅ MongoDB متصل');
+        server.listen(PORT, () => {
+            console.log(`🚀 الخادم يعمل على المنفذ ${PORT}`);
+        });
+    })
+    .catch(err => {
+        console.error('❌ فشل الاتصال بـ MongoDB:', err);
+        // يمكنك هنا إنهاء العملية إذا فشل الاتصال بقاعدة البيانات بشكل حرج
+        process.exit(1); 
+    });
+
+
+app.use('/api/notifications', notificationRoutes); // تم التحديث
+app.use('/api/reviews', reviewRoutes); // تم التحديث
+// يمكنك إضافة مسارات أخرى هنا مثل points, payments إذا كانت موجودة
+
+// الاتصال بقاعدة البيانات والتشغيل
+const PORT = process.env.PORT || 5000;
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => {
+        server.listen(PORT, () => {
+            console.log(`🚀 الخادم يعمل على المنفذ ${PORT}`);
+        });
+    })
+
+    .catch(err => {
+        console.error('❌ فشل الاتصال بـ MongoDB:', err);
+        // يمكنك هنا إنهاء العملية إذا فشل الاتصال بقاعدة البيانات بشكل حرج
+        process.exit(1); 
+    });

@@ -2,57 +2,59 @@ import { useState } from 'react';
 import { useApp } from '../contexts/AppContext';
 import ProductCard from '../components/shared/ProductCard';
 import { formatPrice } from '../data/products';
+import { useLocation } from 'wouter';
 
 /* ===== ORDER SUCCESS ===== */
 export function OrderSuccess() {
-  const { orderNum, showPage } = useApp();
+  const { orderNum } = useApp();
+  const [, setLocation] = useLocation();
   return (
-    <div style={{ maxWidth:'540px', margin:'60px auto', textAlign:'center', padding:'0 24px' }}>
-      <div style={{ fontSize:'80px', marginBottom:'16px', animation:'float 2s ease-in-out infinite' }}>🎉</div>
-      <h2 style={{ fontSize:'26px', fontWeight:900, marginBottom:'8px', color:'#145c22' }}>تم تأكيد طلبك!</h2>
-      <p style={{ color:'#6b7280', marginBottom:'20px' }}>رقم الطلب: <strong style={{ color:'#1a7c2e', fontSize:'16px' }}>{orderNum}</strong></p>
-      <div style={{ background:'#edf7f0', borderRadius:'14px', padding:'20px', marginBottom:'24px', border:'1px solid #c8e6c9', textAlign:'right' }}>
+    <div className="max-w-[540px] mx-auto my-16 text-center px-6 font-cairo">
+      <div className="text-8xl mb-4 animate-bounce">🎉</div>
+      <h2 className="text-3xl font-black mb-2 text-primary-dark">تم تأكيد طلبك بنجاح!</h2>
+      <p className="text-gray-500 mb-6">رقم الطلب: <strong className="text-primary text-lg tracking-widest">{orderNum || '#TR-8821'}</strong></p>
+      <div className="bg-green-50 rounded-2xl p-6 mb-8 border border-green-100 text-right">
         {[
           { icon:'✅', title:'تم استلام الطلب', time:'الآن', done:true },
           { icon:'📦', title:'قيد التجهيز', time:'خلال 24 ساعة', done:false },
           { icon:'🚚', title:'في الطريق', time:'خلال 2-4 أيام', done:false },
         ].map((s,i) => (
-          <div key={i} style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom: i<2?'12px':0 }}>
-            <div style={{ width:'32px', height:'32px', background: s.done?'#1a7c2e':'#dde1e7', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', flexShrink:0 }}>{s.icon}</div>
-            <div style={{ color: s.done?'#111827':'#6b7280' }}>
-              <strong>{s.title}</strong>
-              <div style={{ fontSize:'12px' }}>{s.time}</div>
+          <div key={i} className={`flex items-center gap-4 ${i < 2 ? 'mb-4' : ''}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${s.done ? 'bg-primary text-white shadow-md shadow-green-200' : 'bg-gray-200 text-gray-500'}`}>{s.icon}</div>
+            <div className={s.done ? 'text-gray-900' : 'text-gray-400'}>
+              <strong className="block text-sm">{s.title}</strong>
+              <div className="text-[11px]">{s.time}</div>
             </div>
           </div>
         ))}
       </div>
-      <div style={{ display:'flex', gap:'10px', justifyContent:'center' }}>
-        <button onClick={() => showPage('account')} style={{ padding:'11px 24px', background:'#1a7c2e', color:'white', border:'none', borderRadius:'8px', fontFamily:'Cairo,sans-serif', fontSize:'14px', fontWeight:700, cursor:'pointer' }}>متابعة طلباتي</button>
-        <button onClick={() => showPage('home')} style={{ padding:'11px 24px', background:'white', color:'#374151', border:'1px solid #dde1e7', borderRadius:'8px', fontFamily:'Cairo,sans-serif', fontSize:'14px', fontWeight:700, cursor:'pointer' }}>العودة للتسوق</button>
+      <div className="flex gap-3 justify-center">
+        <button onClick={() => setLocation('/account')} className="px-8 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-green-100 hover:bg-primary-dark transition-all">متابعة طلباتي</button>
+        <button onClick={() => setLocation('/')} className="px-8 py-3 bg-white text-gray-700 border border-gray-200 rounded-xl font-bold text-sm hover:bg-gray-50 transition-all">العودة للتسوق</button>
       </div>
-      <style>{`@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}`}</style>
     </div>
   );
 }
 
 /* ===== WISHLIST ===== */
 export function Wishlist() {
-  const { wishlist, showPage } = useApp();
+  const { wishlist } = useApp();
+  const [, setLocation] = useLocation();
   return (
-    <div>
-      <div style={{ padding:'14px 24px', background:'white', borderBottom:'1px solid #eef0f3' }}>
-        <h1 style={{ fontSize:'18px', fontWeight:800 }}>❤️ المفضلة ({wishlist.length} منتج)</h1>
+    <div className="font-cairo">
+      <div className="px-6 py-4 bg-white border-b border-gray-100">
+        <h1 className="text-xl font-black text-gray-900">❤️ المفضلة ({wishlist.length} منتج)</h1>
       </div>
-      <div style={{ padding:'20px 24px' }}>
+      <div className="p-6">
         {wishlist.length > 0 ? (
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))', gap:'14px' }}>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {wishlist.map((p,i) => <ProductCard key={p.id} product={p} idx={i} />)}
           </div>
         ) : (
-          <div style={{ textAlign:'center', padding:'60px 0' }}>
-            <div style={{ fontSize:'64px', marginBottom:'12px' }}>❤️</div>
-            <div style={{ fontSize:'18px', fontWeight:700, marginBottom:'8px' }}>قائمة المفضلة فارغة</div>
-            <button onClick={() => showPage('categories')} style={{ padding:'10px 24px', background:'#1a7c2e', color:'white', border:'none', borderRadius:'8px', fontFamily:'Cairo,sans-serif', fontSize:'13px', fontWeight:700, cursor:'pointer', marginTop:'8px' }}>تصفح المنتجات</button>
+          <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
+            <div className="text-7xl mb-4 grayscale opacity-50">❤️</div>
+            <div className="text-xl font-bold text-gray-900 mb-2">قائمة المفضلة فارغة</div>
+            <button onClick={() => setLocation('/categories')} className="mt-4 px-8 py-2.5 bg-primary text-white rounded-xl font-bold text-sm hover:bg-primary-dark transition-all">استكشف المنتجات</button>
           </div>
         )}
       </div>
@@ -62,7 +64,8 @@ export function Wishlist() {
 
 /* ===== ACCOUNT ===== */
 export function Account() {
-  const { showPage, showToast } = useApp();
+  const { showToast, user } = useApp();
+  const [, setLocation] = useLocation();
   const [section, setSection] = useState('orders');
 
   const ORDERS = [
@@ -74,75 +77,52 @@ export function Account() {
   const sections: Record<string, React.ReactNode> = {
     orders: (
       <div>
-        <h2 style={{ fontSize:'17px', fontWeight:800, marginBottom:'16px' }}>📦 طلباتي</h2>
+        <h2 className="text-lg font-black mb-4">📦 طلباتي الأخيرة</h2>
         {ORDERS.map(o => (
-          <div key={o.id} style={{ background:'white', borderRadius:'12px', padding:'16px', marginBottom:'10px', border:'1px solid #eef0f3', display:'flex', alignItems:'center', gap:'14px' }}>
-            <div style={{ width:'44px', height:'44px', background:o.statusBg, borderRadius:'10px', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', flexShrink:0 }}>📦</div>
-            <div style={{ flex:1 }}>
-              <div style={{ fontWeight:700, fontSize:'14px' }}>{o.id}</div>
-              <div style={{ fontSize:'12px', color:'#6b7280', marginTop:'2px' }}>{o.date} · {o.items} منتج</div>
+          <div key={o.id} className="bg-white rounded-2xl p-4 mb-3 border border-gray-100 flex items-center gap-4 hover:shadow-sm transition-all">
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style={{ backgroundColor: o.statusBg }}>📦</div>
+            <div className="flex-1">
+              <div className="font-bold text-sm text-gray-900 tracking-wider">{o.id}</div>
+              <div className="text-[11px] text-gray-400 mt-1">{o.date} · {o.items} منتج</div>
             </div>
-            <div style={{ textAlign:'left' }}>
-              <span style={{ background:o.statusBg, color:o.statusColor, padding:'3px 10px', borderRadius:'99px', fontSize:'12px', fontWeight:700, display:'block', marginBottom:'4px' }}>{o.status}</span>
-              <div style={{ fontSize:'15px', fontWeight:900, color:'#145c22' }}>{formatPrice(o.total)}</div>
+            <div className="text-left">
+              <span className="px-3 py-1 rounded-full text-[10px] font-black block mb-2" style={{ backgroundColor: o.statusBg, color: o.statusColor }}>{o.status}</span>
+              <div className="text-base font-black text-primary">{formatPrice(o.total)} دج</div>
             </div>
           </div>
         ))}
       </div>
     ),
-    wishlist: (
-      <div style={{ textAlign:'center', padding:'40px', color:'#6b7280' }}>
-        <div style={{ fontSize:'48px', marginBottom:'12px' }}>❤️</div>
-        <button onClick={() => showPage('wishlist')} style={{ padding:'10px 24px', background:'#1a7c2e', color:'white', border:'none', borderRadius:'8px', fontFamily:'Cairo,sans-serif', fontSize:'13px', fontWeight:700, cursor:'pointer' }}>عرض المفضلة</button>
-      </div>
-    ),
     wallet: (
       <div>
-        <h2 style={{ fontSize:'17px', fontWeight:800, marginBottom:'16px' }}>💰 محفظتي</h2>
-        <div style={{ background:'linear-gradient(135deg,#145c22,#1a7c2e)', borderRadius:'14px', padding:'32px', color:'white', marginBottom:'20px', textAlign:'center' }}>
-          <div style={{ fontSize:'13px', opacity:0.8, marginBottom:'6px' }}>الرصيد المتاح</div>
-          <div style={{ fontSize:'40px', fontWeight:900 }}>12,500 دج</div>
-          <div style={{ display:'flex', gap:'12px', justifyContent:'center', marginTop:'16px' }}>
-            <button onClick={() => showToast('إيداع قريباً','info')} style={{ background:'rgba(255,255,255,0.2)', border:'none', color:'white', padding:'9px 20px', borderRadius:'8px', fontFamily:'Cairo,sans-serif', fontSize:'13px', fontWeight:700, cursor:'pointer' }}>إيداع</button>
-            <button onClick={() => showToast('سحب قريباً','info')} style={{ background:'rgba(255,255,255,0.2)', border:'none', color:'white', padding:'9px 20px', borderRadius:'8px', fontFamily:'Cairo,sans-serif', fontSize:'13px', fontWeight:700, cursor:'pointer' }}>سحب</button>
+        <h2 className="text-lg font-black mb-4">💰 رصيد المحفظة</h2>
+        <div className="bg-gradient-to-br from-primary-dark to-primary rounded-3xl p-8 text-white mb-6 text-center shadow-lg shadow-green-100 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+          <div className="text-xs opacity-70 mb-2 font-bold uppercase tracking-wider">الرصيد المتاح</div>
+          <div className="text-5xl font-black">12,500 <span className="text-xl">دج</span></div>
+          <div className="flex gap-3 justify-center mt-6">
+            <button onClick={() => showToast('إيداع قريباً','info')} className="bg-white/20 px-6 py-2 rounded-xl text-sm font-bold backdrop-blur-md hover:bg-white/30 transition-all">إيداع</button>
+            <button onClick={() => showToast('سحب قريباً','info')} className="bg-white/20 px-6 py-2 rounded-xl text-sm font-bold backdrop-blur-md hover:bg-white/30 transition-all">سحب</button>
           </div>
         </div>
       </div>
     ),
     messages: (
       <div>
-        <h2 style={{ fontSize:'17px', fontWeight:800, marginBottom:'16px' }}>💬 الرسائل</h2>
+        <h2 className="text-lg font-black mb-4">💬 الرسائل</h2>
         {[
           { name:'StyleHub', av:'S', color:'#1565c0', msg:'شكراً لتسوقك معنا! كيف يمكنني مساعدتك؟', time:'10:30', unread:2 },
           { name:'TechStore DZ', av:'T', color:'#2e7d32', msg:'تم تأكيد طلبك وسيصل خلال يومين.', time:'أمس', unread:0 },
         ].map((m,i) => (
-          <div key={i} style={{ background:'white', borderRadius:'12px', padding:'14px', marginBottom:'10px', border:'1px solid #eef0f3', display:'flex', alignItems:'center', gap:'14px', cursor:'pointer' }} onClick={() => showToast(`فتح محادثة ${m.name}`,'info')}>
-            <div style={{ width:'44px', height:'44px', borderRadius:'50%', background:m.color, display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontWeight:700, fontSize:'16px' }}>{m.av}</div>
-            <div style={{ flex:1 }}>
-              <div style={{ fontWeight:700 }}>{m.name}</div>
-              <div style={{ fontSize:'12px', color:'#6b7280' }}>{m.msg}</div>
+          <div key={i} className="bg-white rounded-2xl p-4 mb-3 border border-gray-100 flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition-all" onClick={() => showToast(`فتح محادثة ${m.name}`,'info')}>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-black text-lg shadow-sm" style={{ backgroundColor: m.color }}>{m.av}</div>
+            <div className="flex-1">
+              <div className="font-bold text-sm text-gray-900">{m.name}</div>
+              <div className="text-xs text-gray-500 line-clamp-1 mt-0.5">{m.msg}</div>
             </div>
-            <div style={{ textAlign:'left' }}>
-              <div style={{ fontSize:'11px', color:'#6b7280' }}>{m.time}</div>
-              {m.unread > 0 && <div style={{ background:'#1a7c2e', color:'white', fontSize:'10px', fontWeight:700, borderRadius:'50%', width:'18px', height:'18px', display:'flex', alignItems:'center', justifyContent:'center', margin:'4px 0 0 auto' }}>{m.unread}</div>}
-            </div>
-          </div>
-        ))}
-      </div>
-    ),
-    notifications: (
-      <div>
-        <h2 style={{ fontSize:'17px', fontWeight:800, marginBottom:'16px' }}>🔔 الإشعارات</h2>
-        {[
-          { icon:'📦', text:'طلبك TRS-2025-4821 في الطريق إليك', time:'منذ ساعة', unread:true },
-          { icon:'⭐', text:'قيّم طلبك الأخير', time:'أمس', unread:true },
-          { icon:'🎁', text:'عرض حصري - خصم 20% على الإلكترونيات', time:'منذ يومين', unread:false },
-        ].map((n,i) => (
-          <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:'14px', padding:'14px', background: n.unread?'#edf7f0':'white', border:'1px solid #eef0f3', borderRadius:'10px', marginBottom:'8px' }}>
-            <span style={{ fontSize:'28px' }}>{n.icon}</span>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:'14px', fontWeight: n.unread?700:500 }}>{n.text}</div>
-              <div style={{ fontSize:'12px', color:'#6b7280', marginTop:'3px' }}>{n.time}</div>
+            <div className="text-left flex flex-col items-end">
+              <div className="text-[10px] text-gray-400 font-bold mb-1">{m.time}</div>
+              {m.unread > 0 && <div className="bg-primary text-white text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center shadow-md shadow-green-100">{m.unread}</div>}
             </div>
           </div>
         ))}
@@ -150,32 +130,32 @@ export function Account() {
     ),
     addresses: (
       <div>
-        <h2 style={{ fontSize:'17px', fontWeight:800, marginBottom:'16px' }}>📍 عناويني</h2>
-        <div style={{ background:'white', borderRadius:'12px', padding:'16px', border:'1px solid #eef0f3' }}>
-          <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'10px' }}>
-            <span style={{ fontSize:'20px' }}>🏠</span>
-            <span style={{ fontWeight:700 }}>المنزل</span>
-            <span style={{ background:'#edf7f0', color:'#1a7c2e', padding:'2px 8px', borderRadius:'99px', fontSize:'11px', fontWeight:700, marginRight:'auto' }}>افتراضي</span>
+        <h2 className="text-lg font-black mb-4">📍 عناويني المسجلة</h2>
+        <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xl">🏠</span>
+            <span className="font-bold text-gray-900">المنزل</span>
+            <span className="bg-green-50 text-primary px-3 py-1 rounded-full text-[10px] font-black mr-auto uppercase">افتراضي</span>
           </div>
-          <p style={{ fontSize:'13px', color:'#6b7280', lineHeight:1.6 }}>حي المدينة الجديدة، شارع الاستقلال، الجزائر العاصمة</p>
-          <button onClick={() => showToast('تعديل العنوان قريباً','info')} style={{ padding:'6px 12px', background:'#f4f6f8', border:'1px solid #dde1e7', borderRadius:'6px', cursor:'pointer', fontFamily:'Cairo,sans-serif', fontSize:'12px', marginTop:'10px' }}>تعديل</button>
+          <p className="text-xs text-gray-500 leading-relaxed font-bold">حي المدينة الجديدة، شارع الاستقلال، الجزائر العاصمة</p>
+          <button onClick={() => showToast('تعديل العنوان قريباً','info')} className="mt-4 px-4 py-1.5 bg-gray-50 border border-gray-100 rounded-lg text-xs font-black text-gray-600 hover:bg-gray-100 transition-colors">تعديل العنوان</button>
         </div>
       </div>
     ),
     profile: (
-      <div style={{ maxWidth:'440px' }}>
-        <h2 style={{ fontSize:'17px', fontWeight:800, marginBottom:'16px' }}>✏️ تعديل الملف</h2>
+      <div className="max-w-md">
+        <h2 className="text-lg font-black mb-4 text-gray-900">✏️ تعديل الملف الشخصي</h2>
         {[
           { label:'الاسم الكامل', type:'text', val:'أحمد بن علي' },
           { label:'البريد الإلكتروني', type:'email', val:'ahmed@gmail.com' },
           { label:'رقم الهاتف', type:'tel', val:'06 12 34 56 78' },
         ].map((f,i) => (
-          <div key={i} style={{ marginBottom:'14px' }}>
-            <label style={{ display:'block', fontSize:'13px', fontWeight:700, marginBottom:'6px', color:'#374151' }}>{f.label}</label>
-            <input type={f.type} defaultValue={f.val} style={{ width:'100%', padding:'10px 12px', border:'1px solid #dde1e7', borderRadius:'8px', fontFamily:'Cairo,sans-serif', fontSize:'13px', outline:'none', boxSizing:'border-box' }} />
+          <div key={i} className="mb-4">
+            <label className="block text-xs font-black text-gray-500 mb-2 uppercase tracking-wider">{f.label}</label>
+            <input type={f.type} defaultValue={f.val} className="w-full px-4 py-3 border border-gray-100 rounded-xl text-sm font-bold focus:border-primary outline-none transition-all bg-gray-50/50" />
           </div>
         ))}
-        <button onClick={() => showToast('تم حفظ التغييرات!','success')} style={{ width:'100%', padding:'11px', background:'#1a7c2e', color:'white', border:'none', borderRadius:'8px', fontFamily:'Cairo,sans-serif', fontSize:'14px', fontWeight:700, cursor:'pointer' }}>💾 حفظ التغييرات</button>
+        <button onClick={() => showToast('تم حفظ التغييرات!','success')} className="w-full py-4 bg-primary text-white rounded-2xl font-black text-base shadow-lg shadow-green-100 hover:bg-primary-dark transition-all mt-4">💾 حفظ التغييرات</button>
       </div>
     ),
   };
@@ -186,39 +166,39 @@ export function Account() {
     { id:'messages', icon:'💬', label:'الرسائل', badge:'2', red:true },
     { id:'wallet', icon:'💰', label:'محفظتي' },
     { id:'addresses', icon:'📍', label:'عناويني' },
-    { id:'notifications', icon:'🔔', label:'الإشعارات' },
     { id:'profile', icon:'✏️', label:'تعديل الملف' },
   ];
 
   return (
-    <div>
-      <div style={{ padding:'14px 24px', background:'white', borderBottom:'1px solid #eef0f3' }}>
-        <h1 style={{ fontSize:'18px', fontWeight:800 }}>👤 حسابي</h1>
+    <div className="font-cairo">
+      <div className="px-6 py-4 bg-white border-b border-gray-100">
+        <h1 className="text-xl font-black text-gray-900">👤 حسابي الشخصي</h1>
       </div>
-      <div style={{ display:'flex', gap:'20px', padding:'20px 24px', alignItems:'flex-start' }}>
-        {/* الشريط الجانبي */}
-        <div style={{ width:'240px', flexShrink:0 }}>
-          <div style={{ background:'white', borderRadius:'12px', padding:'20px', textAlign:'center', marginBottom:'12px', border:'1px solid #eef0f3' }}>
-            <div style={{ width:'64px', height:'64px', background:'#1a7c2e', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'28px', fontWeight:800, color:'white', margin:'0 auto 12px' }}>أ</div>
-            <div style={{ fontWeight:800, fontSize:'16px' }}>أحمد بن علي</div>
-            <div style={{ fontSize:'13px', color:'#6b7280', margin:'4px 0 8px' }}>ahmed@gmail.com</div>
-            <div style={{ background:'#edf7f0', padding:'6px 12px', borderRadius:'99px', fontSize:'12px', color:'#1a7c2e', fontWeight:700, display:'inline-block' }}>🛡️ Trust Score: 4.8 / 5</div>
+      <div className="flex flex-col lg:flex-row gap-6 p-6 items-start">
+        {/* Sidebar */}
+        <div className="w-full lg:w-64 flex-shrink-0">
+          <div className="bg-white rounded-2xl p-6 text-center mb-4 border border-gray-100 shadow-sm">
+            <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-3xl font-black text-white mx-auto mb-4 shadow-lg shadow-green-100 uppercase">
+              {user?.name?.[0] || 'أ'}
+            </div>
+            <div className="font-black text-lg text-gray-900">{user?.name || 'أحمد بن علي'}</div>
+            <div className="text-xs text-gray-400 mt-1 mb-4 font-bold tracking-tight lowercase">{user?.email || 'ahmed@gmail.com'}</div>
+            <div className="bg-green-50 px-4 py-2 rounded-xl text-[10px] text-primary font-black uppercase inline-block border border-green-100">🛡️ Trust Score: 4.8 / 5</div>
           </div>
-          <div style={{ background:'white', borderRadius:'12px', overflow:'hidden', border:'1px solid #eef0f3' }}>
+          <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
             {navItems.map(item => (
-              <div key={item.id} onClick={() => setSection(item.id)} style={{ display:'flex', alignItems:'center', gap:'10px', padding:'12px 16px', cursor:'pointer', background: section===item.id?'#edf7f0':'white', color: section===item.id?'#1a7c2e':'#374151', fontWeight: section===item.id?700:500, borderRight:`3px solid ${section===item.id?'#1a7c2e':'transparent'}`, fontSize:'14px', transition:'all 0.2s' }}>
-                <span>{item.icon}</span>
-                <span style={{ flex:1 }}>{item.label}</span>
-                {item.badge && <span style={{ background: item.red?'#fee2e2':'#edf7f0', color: item.red?'#d32f2f':'#1a7c2e', fontSize:'11px', fontWeight:800, padding:'2px 7px', borderRadius:'99px' }}>{item.badge}</span>}
+              <div key={item.id} onClick={() => setSection(item.id)} className={`flex items-center gap-3 px-5 py-3.5 cursor-pointer transition-all border-r-4 ${section === item.id ? 'bg-green-50 text-primary border-primary font-black' : 'bg-white text-gray-600 border-transparent hover:bg-gray-50'}`}>
+                <span className="text-xl">{item.icon}</span>
+                <span className="flex-1 text-sm">{item.label}</span>
+                {item.badge && <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${item.red ? 'bg-red-500 text-white shadow-sm' : 'bg-primary text-white shadow-sm'}`}>{item.badge}</span>}
               </div>
             ))}
-            <div onClick={() => showToast('تم تسجيل الخروج','success')} style={{ display:'flex', alignItems:'center', gap:'10px', padding:'12px 16px', cursor:'pointer', color:'#d32f2f', fontWeight:500, fontSize:'14px', borderTop:'1px solid #eef0f3' }}>
+            <div onClick={() => showToast('تم تسجيل الخروج','success')} className="flex items-center gap-3 px-5 py-3.5 cursor-pointer text-red-500 font-black text-sm border-t border-gray-50 hover:bg-red-50 transition-colors">
               🚪 تسجيل الخروج
             </div>
           </div>
         </div>
-        {/* المحتوى */}
-        <div style={{ flex:1 }}>{sections[section] || sections['orders']}</div>
+        <div className="flex-1 w-full">{sections[section] || sections['orders']}</div>
       </div>
     </div>
   );
@@ -226,7 +206,8 @@ export function Account() {
 
 /* ===== SELLER REGISTER ===== */
 export function SellerRegister() {
-  const { showPage, showToast } = useApp();
+  const { showToast } = useApp();
+  const [, setLocation] = useLocation();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [form, setForm] = useState({ storeName:'', fullName:'', phone:'', email:'', category:'electronics', password:'' });
@@ -239,54 +220,55 @@ export function SellerRegister() {
     setLoading(false);
     setSuccess(true);
     showToast('تم إرسال طلب التسجيل! سنتواصل خلال 24 ساعة','success','🎉');
-    setTimeout(() => showPage('home'), 2500);
+    setTimeout(() => setLocation('/'), 2500);
   };
 
   if (success) return (
-    <div style={{ textAlign:'center', padding:'60px 24px' }}>
-      <div style={{ fontSize:'72px', marginBottom:'16px' }}>🎉</div>
-      <h2 style={{ fontSize:'24px', fontWeight:900, color:'#145c22', marginBottom:'8px' }}>تم التسجيل بنجاح!</h2>
-      <p style={{ color:'#6b7280' }}>سنتواصل معك خلال 24 ساعة لتفعيل متجرك</p>
+    <div className="text-center py-24 px-6 font-cairo">
+      <div className="text-8xl mb-6 animate-bounce">🎉</div>
+      <h2 className="text-3xl font-black text-primary-dark mb-2">تم التسجيل بنجاح!</h2>
+      <p className="text-gray-500 font-bold">سنتواصل معك عبر الهاتف خلال 24 ساعة لتفعيل متجرك</p>
     </div>
   );
 
   return (
-    <div>
-      <div style={{ padding:'14px 24px', background:'white', borderBottom:'1px solid #eef0f3' }}>
-        <h1 style={{ fontSize:'18px', fontWeight:800 }}>🏪 تسجيل كبائع</h1>
+    <div className="font-cairo">
+      <div className="px-6 py-4 bg-white border-b border-gray-100">
+        <h1 className="text-xl font-black text-gray-900">🏪 الانضمام كبائع</h1>
       </div>
-      <div style={{ maxWidth:'600px', margin:'0 auto', padding:'24px' }}>
-        <div style={{ background:'white', borderRadius:'14px', padding:'28px', border:'1px solid #eef0f3' }}>
-          <div style={{ textAlign:'center', marginBottom:'24px' }}>
-            <div style={{ fontSize:'56px', marginBottom:'12px' }}>🚀</div>
-            <h2 style={{ fontSize:'22px', fontWeight:900, marginBottom:'6px' }}>ابدأ البيع على ترسترا</h2>
-            <p style={{ color:'#6b7280', fontSize:'14px' }}>وصل لآلاف المشترين في الجزائر</p>
+      <div className="max-w-2xl mx-auto py-12 px-6">
+        <div className="bg-white rounded-3xl p-8 md:p-10 border border-gray-100 shadow-xl shadow-gray-200/50">
+          <div className="text-center mb-10">
+            <div className="text-6xl mb-4 animate-pulse">🚀</div>
+            <h2 className="text-2xl font-black text-gray-900 mb-2">ابدأ رحلة النجاح على ترسترا</h2>
+            <p className="text-gray-500 text-sm font-bold">وصّل منتجاتك لآلاف المشترين في كل ولايات الجزائر</p>
           </div>
 
-          <div style={{ marginBottom:'14px' }}>
-            <label style={{ display:'block', fontSize:'13px', fontWeight:700, marginBottom:'6px', color:'#374151' }}>اسم المتجر</label>
-            <input type="text" placeholder="مثال: Tech Store DZ" value={form.storeName} onChange={e => setForm(f=>({...f,storeName:e.target.value}))} style={{ width:'100%', padding:'10px 12px', border:'1px solid #dde1e7', borderRadius:'8px', fontFamily:'Cairo,sans-serif', fontSize:'13px', outline:'none', boxSizing:'border-box' }} />
-          </div>
-
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'14px', marginBottom:'14px' }}>
+          <div className="space-y-5">
             <div>
-              <label style={{ display:'block', fontSize:'13px', fontWeight:700, marginBottom:'6px', color:'#374151' }}>الاسم الكامل</label>
-              <input type="text" placeholder="اسمك الكامل" value={form.fullName} onChange={e => setForm(f=>({...f,fullName:e.target.value}))} style={{ width:'100%', padding:'10px 12px', border:'1px solid #dde1e7', borderRadius:'8px', fontFamily:'Cairo,sans-serif', fontSize:'13px', outline:'none', boxSizing:'border-box' }} />
+              <label className="block text-xs font-black text-gray-500 mb-2 uppercase tracking-wider">اسم المتجر التجاري</label>
+              <input type="text" placeholder="مثال: Tech Store DZ" value={form.storeName} onChange={e => setForm(f=>({...f,storeName:e.target.value}))} className="w-full px-4 py-3.5 bg-gray-50 border-2 border-transparent rounded-2xl text-sm font-bold focus:border-primary focus:bg-white outline-none transition-all" />
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-xs font-black text-gray-500 mb-2 uppercase tracking-wider">الاسم الكامل</label>
+                <input type="text" placeholder="اسمك كما في الهوية" value={form.fullName} onChange={e => setForm(f=>({...f,fullName:e.target.value}))} className="w-full px-4 py-3.5 bg-gray-50 border-2 border-transparent rounded-2xl text-sm font-bold focus:border-primary focus:bg-white outline-none transition-all" />
+              </div>
+              <div>
+                <label className="block text-xs font-black text-gray-500 mb-2 uppercase tracking-wider">رقم الهاتف النشط</label>
+                <input type="tel" placeholder="06 XX XX XX XX" value={form.phone} onChange={e => setForm(f=>({...f,phone:e.target.value}))} className="w-full px-4 py-3.5 bg-gray-50 border-2 border-transparent rounded-2xl text-sm font-bold focus:border-primary focus:bg-white outline-none transition-all text-left" />
+              </div>
+            </div>
+
             <div>
-              <label style={{ display:'block', fontSize:'13px', fontWeight:700, marginBottom:'6px', color:'#374151' }}>رقم الهاتف</label>
-              <input type="tel" placeholder="06 XX XX XX XX" value={form.phone} onChange={e => setForm(f=>({...f,phone:e.target.value}))} style={{ width:'100%', padding:'10px 12px', border:'1px solid #dde1e7', borderRadius:'8px', fontFamily:'Cairo,sans-serif', fontSize:'13px', outline:'none', boxSizing:'border-box' }} />
+              <label className="block text-xs font-black text-gray-500 mb-2 uppercase tracking-wider">البريد الإلكتروني المهني</label>
+              <input type="email" placeholder="email@example.com" value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} className="w-full px-4 py-3.5 bg-gray-50 border-2 border-transparent rounded-2xl text-sm font-bold focus:border-primary focus:bg-white outline-none transition-all" />
             </div>
-          </div>
 
-          <div style={{ marginBottom:'14px' }}>
-            <label style={{ display:'block', fontSize:'13px', fontWeight:700, marginBottom:'6px', color:'#374151' }}>البريد الإلكتروني</label>
-            <input type="email" placeholder="email@example.com" value={form.email} onChange={e => setForm(f=>({...f,email:e.target.value}))} style={{ width:'100%', padding:'10px 12px', border:'1px solid #dde1e7', borderRadius:'8px', fontFamily:'Cairo,sans-serif', fontSize:'13px', outline:'none', boxSizing:'border-box' }} />
-          </div>
-
-          <div style={{ marginBottom:'14px' }}>
-            <label style={{ display:'block', fontSize:'13px', fontWeight:700, marginBottom:'6px', color:'#374151' }}>قسم المنتجات</label>
-            <select value={form.category} onChange={e => setForm(f=>({...f,category:e.target.value}))} style={{ width:'100%', padding:'10px 12px', border:'1px solid #dde1e7', borderRadius:'8px', fontFamily:'Cairo,sans-serif', fontSize:'13px', outline:'none', background:'white', boxSizing:'border-box' }}>
+            <div>
+              <label className="block text-xs font-black text-gray-500 mb-2 uppercase tracking-wider">فئة المنتجات الأساسية</label>
+              <select value={form.category} onChange={e => setForm(f=>({...f,category:e.target.value}))} className="w-full px-4 py-3.5 bg-gray-50 border-2 border-transparent rounded-2xl text-sm font-bold focus:border-primary focus:bg-white outline-none transition-all appearance-none cursor-pointer">
               <option value="electronics">إلكترونيات</option>
               <option value="fashion">أزياء</option>
               <option value="home">منزل</option>
@@ -296,12 +278,13 @@ export function SellerRegister() {
             </select>
           </div>
 
-          <div style={{ marginBottom:'20px' }}>
-            <label style={{ display:'block', fontSize:'13px', fontWeight:700, marginBottom:'6px', color:'#374151' }}>كلمة المرور</label>
-            <input type="password" placeholder="••••••••" value={form.password} onChange={e => setForm(f=>({...f,password:e.target.value}))} style={{ width:'100%', padding:'10px 12px', border:'1px solid #dde1e7', borderRadius:'8px', fontFamily:'Cairo,sans-serif', fontSize:'13px', outline:'none', boxSizing:'border-box' }} />
+            <div>
+              <label className="block text-xs font-black text-gray-500 mb-2 uppercase tracking-wider">كلمة المرور</label>
+              <input type="password" placeholder="••••••••" value={form.password} onChange={e => setForm(f=>({...f,password:e.target.value}))} className="w-full px-4 py-3.5 bg-gray-50 border-2 border-transparent rounded-2xl text-sm font-bold focus:border-primary focus:bg-white outline-none transition-all" />
+            </div>
           </div>
 
-          <button onClick={handleSubmit} disabled={loading} style={{ width:'100%', padding:'13px', background: loading?'#6b7280':'#1a7c2e', color:'white', border:'none', borderRadius:'8px', fontFamily:'Cairo,sans-serif', fontSize:'15px', fontWeight:800, cursor: loading?'not-allowed':'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}>
+          <button onClick={handleSubmit} disabled={loading} className="w-full mt-10 py-4 bg-primary text-white rounded-2xl font-black text-lg shadow-lg shadow-green-100 hover:bg-primary-dark transition-all disabled:bg-gray-300">
             {loading ? '⏳ جاري التسجيل...' : '🏪 إنشاء حساب البائع'}
           </button>
         </div>
@@ -312,13 +295,13 @@ export function SellerRegister() {
 
 /* ===== NOT FOUND ===== */
 export function NotFound() {
-  const { showPage } = useApp();
+  const [, setLocation] = useLocation();
   return (
-    <div style={{ textAlign:'center', padding:'80px 24px' }}>
-      <div style={{ fontSize:'80px', marginBottom:'16px' }}>🔍</div>
-      <h1 style={{ fontSize:'32px', fontWeight:900, marginBottom:'8px', color:'#145c22' }}>404</h1>
-      <p style={{ color:'#6b7280', marginBottom:'24px' }}>الصفحة التي تبحث عنها غير موجودة</p>
-      <button onClick={() => showPage('home')} style={{ padding:'12px 32px', background:'#1a7c2e', color:'white', border:'none', borderRadius:'8px', fontFamily:'Cairo,sans-serif', fontSize:'14px', fontWeight:700, cursor:'pointer' }}>
+    <div className="text-center py-24 px-6 font-cairo">
+      <div className="text-8xl mb-4 grayscale opacity-40">🔍</div>
+      <h1 className="text-5xl font-black text-primary mb-2">404</h1>
+      <p className="text-gray-500 font-bold mb-8">نعتذر، الصفحة التي تبحث عنها غير موجودة أو تم نقلها</p>
+      <button onClick={() => setLocation('/')} className="px-10 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-green-100 hover:bg-primary-dark transition-all">
         🏠 العودة للرئيسية
       </button>
     </div>

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 
 const pointSchema = new mongoose.Schema({
     userId: { type: String, required: true },
