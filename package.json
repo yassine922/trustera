@@ -6,13 +6,13 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js",
-    "build": "cd frontend/client && npm run build",
+    "build": "cd frontend/client && pnpm run build",
     "install-deps": "pnpm install && cd frontend/client && pnpm install",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint backend/"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": "22.x",
     "pnpm": ">=9.0.0"
   },
   "packageManager": "pnpm@10.0.0",
