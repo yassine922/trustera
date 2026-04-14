@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 
 // تأكد من أن هذه الملفات موجودة في المجلدات المشار إليها
 const Order = require('../Order'); // يشير إلى backend/Order.js
+const User = require('../auth/User'); // إضافة لاستخدامها في التحقق من البائعين
 const Product = require('../products/Product'); // تصحيح المسار للوصول لمجلد المنتجات
 const Notification = require('../Notification'); // المسار صحيح إذا كان الملف في backend/Notification.js
 
@@ -16,13 +17,25 @@ router.get('/', authMiddleware, adminMiddleware, async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
-        const total = await Order.countDocuments();
-        const orders = await Order.find()
-            .populate('buyerId', 'name email')
-            .populate('items.productId', 'name price')
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit);
+        // Point 13: استخدام Aggregate لتفادي N+1 Problem
+        const [orders, total] = await Promise.all([
+            Order.aggregate([
+                { $sort: { createdAt: -1 } },
+                { $skip: skip },
+                { $limit: limit },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'buyerId',
+                        foreignField: '_id',
+                        as: 'buyer'
+                    }
+                },
+                { $unwind: '$buyer' },
+                { $project: { 'buyer.password': 0 } }
+            ]),
+            Order.countDocuments()
+        ]);
 
         res.json({ 
             success: true, 
@@ -60,55 +73,62 @@ router.get('/:id', authMiddleware, async (req, res) => {
 
 // ===== إنشاء طلب جديد وإرسال إشعارات فورية =====
 router.post('/', authMiddleware, async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
         const { items, totalAmount, shippingAddress } = req.body;
-        if (!items || items.length === 0) return res.status(400).json({ success:false, message: 'السلة فارغة' });
+        if (!items || items.length === 0) {
+            throw new Error('السلة فارغة');
+        }
         
-        // التحقق من توفر المخزون لجميع المنتجات قبل البدء في الخصم
+        // 1. التحقق والخصم في نفس العملية (Point 11: Race Condition Fix)
         for (const item of items) {
-            const product = await Product.findById(item.productId);
-            if (!product || product.stock < Math.abs(item.qty || 1)) {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: `المنتج "${product?.name || 'غير معروف'}" غير متوفر بالكمية المطلوبة` 
-                });
+            const product = await Product.findOneAndUpdate(
+                { _id: item.productId, stock: { $gte: Math.abs(item.qty || 1) } },
+                { $inc: { stock: -Math.abs(item.qty || 1) } },
+                { session, new: true }
+            );
+            
+            if (!product) {
+                throw new Error(`المنتج غير متوفر بالكمية المطلوبة`);
             }
         }
 
-        // 1. إنشاء الطلب الفعلي في قاعدة البيانات
-        const order = await Order.create({
+        // 2. إنشاء الطلب الفعلي في قاعدة البيانات
+        const orderResult = await Order.create([{
             buyerId: req.user.id,
             items,
             totalAmount,
             shippingAddress,
             status: 'pending'
-        });
+        }], { session });
 
-        // 2. تحديث المخزون لكل منتج
-        const stockUpdates = items.map(item => 
-            Product.findByIdAndUpdate(item.productId, { 
-                $inc: { stock: -Math.abs(item.qty || 1) } 
-            }, { new: true }) // new:true لإرجاع المنتج بعد التحديث (للتأكد)
-        );
-        await Promise.all(stockUpdates);
-
+        const order = orderResult[0];
         const orderId = order._id;
 
-        // 3. تحديد البائعين وإرسال الإشعارات
-        const sellerIds = [...new Set(items.map(item => item.sellerId.toString()))]; // التأكد من String
+        await session.commitTransaction();
+
+        // 3. تحديد البائعين الموثوقين وإرسال الإشعارات (Point 12)
+        const sellerIds = [...new Set(items.map(item => item.sellerId.toString()))];
+        
+        const validSellers = await User.find({
+            _id: { $in: sellerIds },
+            role: 'seller'
+        }).select('_id');
+        
+        const validSellerIds = validSellers.map(s => s._id.toString());
         const io = req.app.get('io');
 
-        for (const sId of sellerIds) {
-            const msg = `لديك طلب جديد رقم #${orderId.toString().slice(-6).toUpperCase()}`;
+        for (const sId of validSellerIds) {
+            const msg = `طلب جديد #${orderId.toString().slice(-6).toUpperCase()}`;
             
-            // حفظ في قاعدة البيانات للرجوع إليها لاحقاً
             await Notification.create({
                 sellerId: sId,
                 orderId: orderId,
                 message: msg
             });
 
-            // إرسال الإشعار فوراً عبر Socket.io إذا كان البائع متصلاً
             if (io) {
                 io.to(sId).emit('notification', {
                     message: msg,
@@ -118,9 +138,12 @@ router.post('/', authMiddleware, async (req, res) => {
             }
         }
 
-        res.status(201).json({ success: true, message: 'تم إنشاء الطلب بنجاح', orderId });
+        res.status(201).json({ success: true, orderId });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'خطأ في معالجة الطلب', error: error.message });
+        await session.abortTransaction();
+        res.status(400).json({ success: false, message: error.message });
+    } finally {
+        session.endSession();
     }
 });
 
@@ -157,18 +180,30 @@ router.put('/:id/status', authMiddleware, async (req, res) => {
 
 // حذف طلب (للمدير فقط)
 router.delete('/:id', authMiddleware, adminMiddleware, async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    
     try {
-        const order = await Order.findByIdAndDelete(req.params.id);
-        if (!order) return res.status(404).json({ success: false, message: 'الطلب غير موجود' });
+        const order = await Order.findById(req.params.id).session(session);
+        if (!order) throw new Error('الطلب غير موجود');
 
-        // استرجاع المخزون للمنتجات المحذوفة (اختياري، بناءً على سياسة العمل)
-        for (const item of order.items) {
-            await Product.findByIdAndUpdate(item.productId, { $inc: { stock: Math.abs(item.qty) } });
+        // Point 27: استرجاع المخزون فقط إذا كان الطلب لم يكتمل
+        if (order.status !== 'completed' && order.status !== 'cancelled') {
+            for (const item of order.items) {
+                await Product.findByIdAndUpdate(item.productId, { 
+                    $inc: { stock: Math.abs(item.qty) } 
+                }, { session });
+            }
         }
 
-        res.json({ success: true, message: 'تم حذف الطلب بنجاح', data: order });
+        await Order.findByIdAndDelete(req.params.id).session(session);
+        await session.commitTransaction();
+        res.json({ success: true, message: 'تم حذف الطلب بنجاح' });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'خطأ في حذف الطلب', error: error.message });
+        await session.abortTransaction();
+        res.status(500).json({ success: false, message: error.message });
+    } finally {
+        session.endSession();
     }
 });
 

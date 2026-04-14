@@ -32,7 +32,7 @@ export default function ProductPage() {
       setError(null);
       try {
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
-        const res = await axios.get(`${API_URL}/products/${params.id}`, { headers });
+        const res = await axios.get(`${API_URL}/api/products/${params.id}`, { headers });
         if (res.data.success) {
           setProduct(res.data.data);
           setQty(1); // إعادة ضبط الكمية عند تغيير المنتج
@@ -59,7 +59,7 @@ export default function ProductPage() {
     if (product?.category) {
       const fetchRelated = async () => {
         try {
-          const res = await axios.get(`${API_URL}/products/search?category=${product.category}`);
+          const res = await axios.get(`${API_URL}/api/products/search?category=${product.category}`);
           if (res.data.success) return res.data.data;
           return [];
         } catch (e) {
@@ -81,7 +81,7 @@ export default function ProductPage() {
 
   const p = product;
   // const seller = getSellerById(p.sellerId); // يجب جلب معلومات البائع من API
-  const inWish = wishlist.some(w => w.id === p._id); // استخدام _id ليتوافق مع MongoDB
+  const inWish = wishlist.some(w => (w._id || w.id) === p._id); // Point: ID Consistency
 
   const bgClasses: Record<string, string> = {
     'gradient-1': 'from-blue-50 to-blue-200',

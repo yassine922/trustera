@@ -1,13 +1,27 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-
+const Joi = require('joi');
 const bcrypt = require('bcryptjs');
 const User = require('./User'); // التأكد من أن المسار نسبي للمجلد الحالي
+
+// Point 8: Joi validation schema
+const registerSchema = Joi.object({
+    name: Joi.string().min(3).max(50).required(),
+    email: Joi.string().email().required(),
+    password: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).required(),
+    role: Joi.string().valid('buyer', 'seller').default('buyer')
+});
 
 // ===== تسجيل مستخدم جديد =====
 router.post('/register', async (req, res) => {
     try {
+        // Validation logic
+        const { error } = registerSchema.validate(req.body);
+        if (error) {
+            return res.status(400).json({ success: false, message: error.details[0].message });
+        }
+
         const { name, email, password, role } = req.body;
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -17,7 +31,14 @@ router.post('/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await User.create({ name, email, password: hashedPassword, role: role || 'buyer' });
 
-        res.status(201).json({ success: true, message: 'تم التسجيل بنجاح', user: { id: newUser._id, name: newUser.name, email: newUser.email, role: newUser.role } });
+        // Generate token on register
+        const token = jwt.sign(
+            { id: newUser._id, role: newUser.role }, 
+            process.env.JWT_SECRET, 
+            { expiresIn: '7d', issuer: 'trustera', audience: 'trustera-client' }
+        );
+
+        res.status(201).json({ success: true, message: 'تم التسجيل بنجاح', token, user: { id: newUser._id, name: newUser.name, email: newUser.email, role: newUser.role } });
     } catch (error) {
         console.error('Error during registration:', error);
         res.status(500).json({ success: false, message: 'خطأ في التسجيل', error: error.message });
@@ -32,7 +53,11 @@ router.post('/login', async (req, res) => {
         if (!user || !(await bcrypt.compare(password, user.password))) {
             return res.status(401).json({ success: false, message: 'بيانات الدخول غير صحيحة' });
         }
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign(
+            { id: user._id, role: user.role }, 
+            process.env.JWT_SECRET, 
+            { expiresIn: '7d', issuer: 'trustera', audience: 'trustera-client' }
+        );
         res.json({ success: true, token, user: { id: user._id, name: user.name, role: user.role } });
     } catch (error) {
         console.error('Error during login:', error);

@@ -206,9 +206,9 @@ export default function ManagerDashboard() {
   async function fetchAll() {
     try {
       const [uRes, oRes, pRes] = await Promise.all([
-        fetch(`${API_URL}/auth/users`, { headers }).catch(() => null),
-        fetch(`${API_URL}/orders`,     { headers }),
-        fetch(`${API_URL}/products`,   { headers }),
+        fetch(`${API_URL}/api/auth/users`, { headers }).catch(() => null),
+        fetch(`${API_URL}/api/orders`,     { headers }),
+        fetch(`${API_URL}/api/products`,   { headers }),
       ]);
       if (uRes) { const d = await uRes.json(); if (d.success) setUsers(d.data); }
       const oData = await oRes.json(); if (oData.success) setOrders(oData.data);
@@ -218,7 +218,7 @@ export default function ManagerDashboard() {
 
   async function deleteOrder(id: string) {
     try {
-      await fetch(`${API_URL}/orders/${id}`, { method: 'DELETE', headers });
+      await fetch(`${API_URL}/api/orders/${id}`, { method: 'DELETE', headers });
       showToast('تم حذف الطلب');
       setOrders(prev => prev.filter(o => o._id !== id));
     } catch { showToast('حدث خطأ', 'error'); }
@@ -226,7 +226,7 @@ export default function ManagerDashboard() {
 
   async function deleteProduct(id: string) {
     try {
-      await fetch(`${API_URL}/products/${id}`, { method: 'DELETE', headers });
+      await fetch(`${API_URL}/api/products/${id}`, { method: 'DELETE', headers });
       showToast('تم حذف المنتج');
       setProducts(prev => prev.filter(p => p._id !== id));
     } catch { showToast('حدث خطأ', 'error'); }

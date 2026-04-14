@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
+import { useLocation } from 'wouter';
 
 // بيانات ثابتة - لا تحتاج AI
 const NAV_ITEMS = [
@@ -25,12 +26,13 @@ type DynamicPageIds = 'login' | 'manager-dashboard' | 'seller-dashboard' | 'acco
 type PageId = NavItemIds | DynamicPageIds;
 
 export default function Header() {
-  const { showPage, cartCount, wishCount, showToast, setCurrentCat, user, logout } = useApp();
+  const { cartCount, wishCount, showToast, setCurrentCat, user, logout } = useApp();
   const [searchVal, setSearchVal] = useState('');
   const [activePage, setActivePage] = useState<PageId>('home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -49,8 +51,22 @@ export default function Header() {
   };
 
   const goTo = (page: PageId) => {
-    showPage(page as any);
     setActivePage(page);
+
+    // تحويل معرفات الصفحات إلى مسارات URL (Point 1 in Improvements)
+    const routes: Record<string, string> = {
+      home: '/',
+      categories: '/categories',
+      orders: '/orders',
+      wishlist: '/wishlist',
+      cart: '/cart',
+      login: '/login',
+      'manager-dashboard': '/manager-dashboard',
+      'seller-dashboard': '/seller-dashboard',
+      'account': '/account'
+    };
+
+    setLocation(routes[page] || `/${page}`);
     setIsMobileMenuOpen(false);
     setIsMobileSearchOpen(false);
 
