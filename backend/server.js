@@ -10,18 +10,23 @@ const authRoutes = require('./auth').router;
 const productRoutes = require('./products');
 const orderRoutes = require('./orders');
 const notificationRoutes = require('./notifications'); 
-const reviewRoutes = require('./reviews'); // تصحيح المسار ليشير لمجلد reviews
+const reviewRoutes = require('./index'); // استخدام ملف backend/index.js لراوت التقييمات
 
 // تأكد أنك تستورد نماذج Mongoose لكي يتم تسجيلها قبل أي استعلامات
 require('./auth/User'); // تصحيح المسار لتسجيل الموديل
 require('./products/Product');
 require('./Review');
 require('./Order'); // يشير إلى backend/Order.js
-require('./models/Notification');
+require('./Notification'); // تصحيح المسار: الملف في نفس مجلد backend
 
 
 const app = express();
 const server = http.createServer(app);
+
+if (!process.env.MONGODB_URI) {
+    console.error('❌ خطأ: MONGODB_URI غير معرف في متغيرات البيئة!');
+}
+
 const io = new Server(server, {
     cors: { origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] }
 });
@@ -82,16 +87,19 @@ app.use((err, req, res, next) => {
     });
 });
 
-// إعداد المنافذ والاتصال بقاعدة البيانات
+// إعداد المنافذ
 const PORT = process.env.PORT || 5000;
+
+// ابدأ الاستماع للمنفذ فوراً لنجاح فحص Render
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 الخادم يعمل على المنفذ ${PORT}`);
+});
+
+// الاتصال بقاعدة البيانات بشكل منفصل
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
         console.log('✅ MongoDB متصل بنجاح');
-        server.listen(PORT, () => {
-            console.log(`🚀 الخادم يعمل على المنفذ ${PORT}`);
-        });
     })
     .catch(err => {
         console.error('❌ فشل الاتصال بـ MongoDB:', err);
-        process.exit(1);
     });

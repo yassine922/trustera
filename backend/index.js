@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Review = mongoose.models.Review || require('./Review'); 
-const { authMiddleware } = require('../auth/index');
+const { authMiddleware } = require('./auth/index');
 const Product = require('./products/Product'); 
 
 // إضافة تقييم جديد للمنتج
