@@ -33,10 +33,10 @@ importers:
         specifier: ^2.2.0
         version: 2.2.0
       express-rate-limit:
-        specifier: ^7.2.0
+        specifier: ^7.5.1
         version: 7.5.1(express@4.22.1)
       helmet:
-        specifier: ^7.1.0
+        specifier: ^7.2.0
         version: 7.2.0
       jsonwebtoken:
         specifier: ^9.0.3
@@ -54,11 +54,8 @@ importers:
         specifier: ^4.8.3
         version: 4.8.3
       winston:
-        specifier: ^3.11.0
+        specifier: ^3.19.0
         version: 3.19.0
-      xss-clean:
-        specifier: ^0.1.4
-        version: 0.1.4
     devDependencies:
       nodemon:
         specifier: ^3.1.14
@@ -858,13 +855,6 @@ packages:
   xmlhttprequest-ssl@2.1.2:
     resolution: {integrity: sha512-TEU+nJVUUnA4CYJFLvK5X9AOeH4KvDvhIfm0vV1GaQRtchnG0hgK5p8hw/xjv8cunWYCsiPCSDzObPyhEwq3KQ==}
     engines: {node: '>=0.4.0'}
-
-  xss-clean@0.1.4:
-    resolution: {integrity: sha512-4hArTFHYxrifK9VXOu/zFvwjTXVjKByPi6woUHb1IqxlX0Z4xtFBRjOhTKuYV/uE1VswbYsIh5vUEYp7MmoISQ==}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
-
-  xss-filters@1.2.7:
-    resolution: {integrity: sha512-KzcmYT/f+YzcYrYRqw6mXxd25BEZCxBQnf+uXTopQDIhrmiaLwO+f+yLsIvvNlPhYvgff8g3igqrBxYh9k8NbQ==}
 
 snapshots:
 
@@ -1700,9 +1690,3 @@ snapshots:
   ws@8.18.3: {}
 
   xmlhttprequest-ssl@2.1.2: {}
-
-  xss-clean@0.1.4:
-    dependencies:
-      xss-filters: 1.2.7
-
-  xss-filters@1.2.7: {}
