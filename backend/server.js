@@ -26,8 +26,14 @@ if (!process.env.MONGODB_URI) {
     console.error('❌ خطأ: MONGODB_URI غير معرف في متغيرات البيئة!');
 }
 
+const corsOptions = {
+    origin: process.env.FRONTEND_URL || '*',
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+};
+
 const io = new Server(server, {
-    cors: { origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] }
+    cors: corsOptions
 });
 
 // إعداد Socket.io وإتاحته للـ Routes
@@ -64,11 +70,7 @@ io.on('connection', (socket) => {
 });
 
 // Middlewares
-app.use(cors({
-    origin: process.env.FRONTEND_URL || '*', // أضف رابط Vercel في متغيرات البيئة لاحقاً
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true
-}));
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '5mb' })); // لدعم صور Base64
 
 // ربط المسارات
