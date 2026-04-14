@@ -17,7 +17,7 @@ require('./auth/User'); // تصحيح المسار لتسجيل الموديل
 require('./products/Product');
 require('./Review');
 require('./Order'); // يشير إلى backend/Order.js
-require('./Notification'); // تصحيح المسار: الملف في نفس مجلد backend
+require('./Notification'); 
 
 
 const app = express();

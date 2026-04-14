@@ -236,8 +236,7 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-auto-fill gap-3.5">
           {featured.map((p, i) => (
-            <ProductCard key={p.id || (p as any)._id || `featured-${i}`} product={p} idx={i} />
-            <ProductCard key={p.id || (p as any)._id || `newest-${i}`} product={p} idx={i} />
+            <ProductCard key={p.id || (p as any)._id || `feat-${i}`} product={p} idx={i} />
           ))}
         </div>
       </div>
@@ -275,7 +274,7 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-auto-fill gap-3.5">
           {newest.map((p, i) => (
-            <ProductCard key={p.id || (p as any)._id || i} product={p} idx={i} />
+            <ProductCard key={p.id || (p as any)._id || `new-${i}`} product={p} idx={i} />
           ))}
         </div>
       </div>
