@@ -48,7 +48,7 @@ export function Wishlist() {
       <div className="p-6">
         {wishlist.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {wishlist.map((p,i) => <ProductCard key={p.id} product={p} idx={i} />)}
+            {wishlist.map((p,i) => <ProductCard key={p._id} product={p} idx={i} />)}
           </div>
         ) : (
           <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">

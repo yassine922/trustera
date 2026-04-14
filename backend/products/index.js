@@ -90,7 +90,7 @@ router.get('/:id', optionalAuth, async (req, res) => {
         } else {
             query.status = 'active'; // المستخدمون الآخرون يرون المنتجات النشطة فقط
         }
-        const product = await Product.findOne(query).populate('sellerId', 'name email');
+        const product = await Product.findOne(query).populate('sellerId', 'name email role');
         if (!product) return res.status(404).json({ success: false, message: 'المنتج غير موجود أو غير نشط' });
         res.json({ success: true, data: product });
     } catch (error) {

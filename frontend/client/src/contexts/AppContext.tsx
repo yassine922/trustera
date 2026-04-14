@@ -1,7 +1,38 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { Product } from '../data/products';
 
 export type Page = 'home' | 'categories' | 'product' | 'cart' | 'checkout' | 'order-success' | 'wishlist' | 'account' | 'seller-register' | 'login' | 'seller-dashboard' | 'manager-dashboard';
+
+export interface Product {
+  id: string | number;
+  _id?: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  oldPrice?: number;
+  description?: string;
+  desc?: string;
+  category?: string;
+  cat?: string;
+  catLabel?: string;
+  image?: string;
+  bg?: string;
+  emoji?: string;
+  sku?: string;
+  seller?: string;
+  sellerId?: string | number;
+  rating?: number;
+  reviews?: number;
+  stock?: number;
+  sold?: number;
+  isNew?: boolean;
+  isFeatured?: boolean;
+  isReal?: boolean;
+  isFromApi?: boolean;
+  isFast?: boolean;
+  colors?: string[];
+  sizes?: string[];
+  discount?: number;
+}
 
 interface CartItem extends Product { qty: number; }
 

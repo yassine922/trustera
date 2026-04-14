@@ -3,7 +3,6 @@ const express = require('express');
 const http = require('http');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const path = require('path');
 const { Server } = require('socket.io');
 
 const authRoutes = require('./auth').router;
@@ -65,21 +64,22 @@ io.on('connection', (socket) => {
 });
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+    origin: process.env.FRONTEND_URL || '*', // أضف رابط Vercel في متغيرات البيئة لاحقاً
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+}));
 app.use(express.json({ limit: '5mb' })); // لدعم صور Base64
 
 // ربط المسارات
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/notifications', notificationRoutes); // تم التحديث
-app.use('/api/reviews', reviewRoutes); // تم التحديث
-// يمكنك إضافة مسارات أخرى هنا مثل points, payments إذا كانت موجودة
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // ===== معالج الأخطاء العام (Global Error Handler) =====
-// يجب أن يأتي بعد جميع المسارات والـ middlewares الأخرى
 app.use((err, req, res, next) => {
-    console.error(err.stack); // تسجيل الخطأ في الـ console
     res.status(500).json({
         success: false,
         message: 'حدث خطأ غير متوقع في الخادم!',

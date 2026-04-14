@@ -53,26 +53,20 @@ export default function ProductPage() {
     fetchProduct();
   }, [params?.id, token, setLocation, showToast]);
 
-  // يمكن حذف هذه الوظائف أو تعديلها لتتناسب مع البيانات الحقيقية من API
-  // حاليًا تعتمد على دالة getByCategory التي تجلب من بيانات ثابتة
-  const fetchRelatedProducts = async (categoryId: string) => {
-    try {
-      // هنا يجب عليك استدعاء API جلب المنتجات حسب الفئة
-      // للمثال، سنعيد استخدام الدالة الثابتة أو نصمم API endpoint لذلك
-      // مثال: const res = await axios.get(`${API_URL}/products?category=${categoryId}`);
-      // ولكن للحفاظ على تشغيل الكود مع الـ diff الحالي، سنستخدم دالة وهمية أو ثابتة
-      return []; // placeholder
-    } catch (e) {
-      console.error('Error fetching related products', e);
-      return [];
-    }
-  };
-
   const [related, setRelated] = useState<any[]>([]);
 
   useEffect(() => {
     if (product?.category) {
-      fetchRelatedProducts(product.category).then(data => {
+      const fetchRelated = async () => {
+        try {
+          const res = await axios.get(`${API_URL}/products/search?category=${product.category}`);
+          if (res.data.success) return res.data.data;
+          return [];
+        } catch (e) {
+          return [];
+        }
+      };
+      fetchRelated().then(data => {
         // فلترة المنتج الحالي إذا كانت البيانات الثابتة تحتوي عليه
         const filtered = data.filter((r:any) => r._id !== product._id);
         setRelated(filtered.slice(0, 4));
