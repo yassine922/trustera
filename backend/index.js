@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Review = mongoose.models.Review || require('./Review'); 
 const { authMiddleware } = require('../auth/index');
-const Product = require('./products/Product');
+const Product = require('./products/Product'); 
 
 // إضافة تقييم جديد للمنتج
 router.post('/', authMiddleware, async (req, res) => {

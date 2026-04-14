@@ -3,19 +3,21 @@ const express = require('express');
 const http = require('http');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 const { Server } = require('socket.io');
 
 const authRoutes = require('./auth').router;
 const productRoutes = require('./products');
 const orderRoutes = require('./orders');
 const notificationRoutes = require('./notifications'); // تم التحديث (مسار جديد للإشعارات)
-const reviewRoutes = require('./reviews'); // تم التحديث (مسار جديد للتقييمات)
+const reviewRoutes = require('./index'); // تم التعديل ليشير لملف backend/index.js الحالي
+
 // تأكد أنك تستورد نماذج Mongoose لكي يتم تسجيلها قبل أي استعلامات
-require('./models/User');
-require('./models/Product');
-require('./models/Order');
-require('./models/Notification');
-require('./models/Review');
+require('./auth/User'); // تصحيح المسار لتسجيل الموديل
+require('./products/Product');
+require('./Review');
+// ملاحظة: تأكد من وجود ملفات Order و Notification في مجلداتها الصحيحة
+// إذا كانت في مجلد models، اترك المسار كما هو، وإلا فقم بتصحيحه.
 
 
 const app = express();

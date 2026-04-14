@@ -3,7 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 
 const bcrypt = require('bcryptjs');
-const User = require('../models/User'); // تم التحديث لجلب اسم البائع
+const User = require('./User'); // التأكد من أن المسار نسبي للمجلد الحالي
 
 // ===== تسجيل مستخدم جديد =====
 router.post('/register', async (req, res) => {

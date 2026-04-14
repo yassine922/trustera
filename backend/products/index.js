@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const Product = require('../models/Product'); // تم التحديث
+const Product = require('./Product'); // تصحيح المسار: الملف في نفس المجلد
 const { authMiddleware, adminMiddleware } = require('../auth'); // تم التحديث
-const User = require('../models/User'); // تم التحديث لجلب اسم البائع
+const User = require('../auth/User'); // تصحيح المسار: الملف موجود في مجلد auth وليس models
 
 // 1. جلب منتجات البائع الحالي فقط (تأمين كامل)
 router.get('/my-products', authMiddleware, async (req, res) => {
@@ -20,13 +20,12 @@ router.get('/my-products', authMiddleware, async (req, res) => {
 router.get('/search', async (req, res) => {
     try {
         const { q, minPrice, maxPrice, minRating, category, status } = req.query;
+        const isAdmin = req.user && req.user.role === 'admin';
         
-        let query = { }; // لا نحدد الحالة هنا لكي يتمكن المدير من البحث في كل الحالات
-        if (req.user && req.user.role !== 'admin') { // للمستخدم العادي، نبحث عن المنتجات النشطة فقط
-            query.status = 'active';
-        } else if (status) { // للمدير، يمكنه تحديد الحالة
-            query.status = status;
-        }
+        let query = {};
+        // إذا لم يكن مديراً، يرى المنتجات النشطة فقط دائماً
+        // إذا كان مديراً، يمكنه الفلترة حسب الحالة المرسلة أو رؤية الكل
+        query.status = isAdmin ? (status || { $exists: true }) : 'active';
 
 
         // البحث بالاسم (Regex للإيجاد الجزئي غير الحساس لحالة الأحرف)

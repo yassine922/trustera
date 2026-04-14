@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const Order = require('../models/Order'); // تم التحديث
-const Product = require('../models/Product'); // تم التحديث
-const Notification = require('../models/Notification'); // تم التحديث
+
+// تأكد من أن هذه الملفات موجودة في المجلدات المشار إليها
+const Order = mongoose.models.Order || require('../models/Order'); 
+const Product = require('../products/Product'); // تصحيح المسار للوصول لمجلد المنتجات
+const Notification = mongoose.models.Notification || require('../models/Notification');
+
 const { authMiddleware, adminMiddleware } = require('../auth'); // تم التحديث
 
 // جلب جميع الطلبات (للمدير فقط)
