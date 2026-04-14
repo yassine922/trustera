@@ -1,16 +1,41 @@
-# Trustera - منصة التجارة الإلكترونية
+# 🛍️ Trustera - Premium E-Commerce Platform
 
-منصة تجارة إلكترونية حديثة تربط بين المشترين والبائعين بطريقة آمنة وموثوقة.
+![MERN Stack](https://img.shields.io/badge/Stack-MERN-blue.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+![Node Version](https://img.shields.io/badge/Node-%3E%3D18.0.0-brightgreen.svg)
+![Platform](https://img.shields.io/badge/Platform-Desktop%20%26%20Mobile-orange.svg)
 
-## المميزات الرئيسية
+**Trustera** هي منصة تجارة إلكترونية متكاملة تم بناؤها باستخدام تقنيات MERN الحديثة. تهدف المنصة إلى توفير تجربة تسوق آمنة وسلسة في السوق الجزائري، مع دعم كامل للبائعين والمشترين ونظام إداري قوي.
 
-- **نظام المصادقة**: تسجيل دخول وتسجيل آمن للمشترين والبائعين
-- **إدارة المنتجات**: إضافة وتعديل وحذف المنتجات
-- **نظام الطلبات**: إنشاء وتتبع الطلبات
-- **نظام النقاط**: جمع واستخدام نقاط المكافآت
-- **خيارات الدفع**: دفع عبر البطاقة (CIB) أو عند الاستلام (COD)
+---
 
-## البنية
+## ✨ المميزات الرئيسية (Core Features)
+
+### 👤 للمستخدمين (Buyers & Sellers)
+- **نظام مصادقة متطور**: حماية بكلمات مرور مشفرة (Bcrypt) وتوكن (JWT).
+- **لوحة تحكم البائع**: واجهة مخصصة لإدارة المخزون، تتبع المبيعات، واستلام الإشعارات الفورية.
+- **إشعارات حية**: تنبيهات فورية باستخدام **Socket.io** عند استلام طلبات جديدة.
+- **نظام تقييمات**: مصداقية عالية عبر نظام مراجعات يمنع التقييم المتكرر.
+
+### ⚙️ تقنياً (Technical Highlights)
+- **بحث متقدم**: فلترة المنتجات حسب السعر، التقييم، القسم، والحالة.
+- **تصميم متجاوب**: واجهة مستخدم عصرية باستخدام **Tailwind CSS** و **Radix UI**.
+- **تأمين البيانات**: Middleware للتحقق من الصلاحيات (Admin, Seller, Buyer).
+- **إدارة الحالة**: استخدام React Context API لإدارة السلة والمفضلة بكفاءة.
+
+---
+
+## 🛠️ التقنيات المستخدمة (Tech Stack)
+
+| Frontend | Backend | Database | Infrastructure |
+| :--- | :--- | :--- | :--- |
+| React 18 / Vite | Node.js | MongoDB Atlas | Render / Vercel |
+| Tailwind CSS | Express.js | Mongoose ODM | GitHub Actions |
+| Wouter (Routing) | Socket.io | - | Dotenv (Security) |
+
+---
+
+## 📂 هيكل المشروع (Project Structure)
 
 ```
 trustera/

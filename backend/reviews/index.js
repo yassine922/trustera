@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const Review = require('../models/Review'); // تم التحديث
+const Review = require('../Review'); // بناءً على server.js الملف في الجذر
 const { authMiddleware } = require('../auth'); // تم التحديث (لإعادة استخدام Middleware)
-const Product = require('../models/Product'); // تم التحديث
+const Product = require('../products/Product'); // بناءً على server.js الملف في مجلد المنتجات
 
 // إضافة تقييم جديد للمنتج
 router.post('/', authMiddleware, async (req, res) => {

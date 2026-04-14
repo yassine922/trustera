@@ -9,14 +9,14 @@ const { Server } = require('socket.io');
 const authRoutes = require('./auth').router;
 const productRoutes = require('./products');
 const orderRoutes = require('./orders');
-const notificationRoutes = require('./notifications'); // تم التحديث (مسار جديد للإشعارات)
-const reviewRoutes = require('./index'); // تم التعديل ليشير لملف backend/index.js الحالي
+const notificationRoutes = require('./notifications'); 
+const reviewRoutes = require('./reviews'); // تصحيح المسار ليشير لمجلد reviews
 
 // تأكد أنك تستورد نماذج Mongoose لكي يتم تسجيلها قبل أي استعلامات
 require('./auth/User'); // تصحيح المسار لتسجيل الموديل
 require('./products/Product');
 require('./Review');
-require('./orders/Order');
+require('./Order'); // تصحيح المسار: الملف موجود في المجلد الرئيسي backend
 require('./models/Notification');
 
 
