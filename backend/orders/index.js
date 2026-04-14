@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 // تأكد من أن هذه الملفات موجودة في المجلدات المشار إليها
 const Order = require('../Order'); // يشير إلى backend/Order.js
 const Product = require('../products/Product'); // تصحيح المسار للوصول لمجلد المنتجات
-const Notification = require('../Notification'); // تصحيح المسار: الملف في مجلد backend
+const Notification = require('../Notification'); // المسار صحيح إذا كان الملف في backend/Notification.js
 
 const { authMiddleware, adminMiddleware } = require('../auth'); // تم التحديث
 

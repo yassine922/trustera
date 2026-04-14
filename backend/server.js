@@ -10,7 +10,7 @@ const authRoutes = require('./auth').router;
 const productRoutes = require('./products');
 const orderRoutes = require('./orders');
 const notificationRoutes = require('./notifications'); 
-const reviewRoutes = require('./reviews'); // ✅ استخدام المجلد المخصص للتقييمات
+const reviewRoutes = require('./reviews/index'); // التأكد من المسار الكامل للراوت
 
 // تأكد أنك تستورد نماذج Mongoose لكي يتم تسجيلها قبل أي استعلامات
 require('./auth/User'); // تصحيح المسار لتسجيل الموديل
