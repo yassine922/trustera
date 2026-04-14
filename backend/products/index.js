@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Product = require('./Product'); // تصحيح المسار: الملف في نفس المجلد
-const { authMiddleware, adminMiddleware } = require('../auth'); // تم التحديث
+const { authMiddleware, adminMiddleware, optionalAuth } = require('../auth'); // تم التحديث
 const User = require('../auth/User'); // تصحيح المسار: الملف موجود في مجلد auth وليس models
 
 // 1. جلب منتجات البائع الحالي فقط (تأمين كامل)
@@ -17,10 +17,10 @@ router.get('/my-products', authMiddleware, async (req, res) => {
 });
 
 // 6. البحث المتقدم (Advanced Search)
-router.get('/search', async (req, res) => {
+router.get('/search', optionalAuth, async (req, res) => {
     try {
         const { q, minPrice, maxPrice, minRating, category, status } = req.query;
-        const isAdmin = req.user && req.user.role === 'admin';
+        const isAdmin = req.user && req.user.role === 'admin'; // ملاحظة: هذا يتطلب وجود middleware قبل المسار لفك التوكن
         
         let query = {};
         // إذا لم يكن مديراً، يرى المنتجات النشطة فقط دائماً
@@ -67,7 +67,7 @@ router.get('/', async (req, res) => {
 });
 
 // جلب منتج واحد (نشط فقط للزوار)
-router.get('/:id', async (req, res) => {
+router.get('/:id', optionalAuth, async (req, res) => {
     try {
         if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
             return res.status(400).json({ success: false, message: 'معرف منتج غير صحيح' });

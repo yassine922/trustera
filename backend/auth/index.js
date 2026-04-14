@@ -43,7 +43,7 @@ router.post('/login', async (req, res) => {
 // ===== Middleware التحقق من التوكن =====
 function authMiddleware(req, res, next) {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader || !authHeader.startsWith('Bearer ') || authHeader === 'Bearer null') {
         return res.status(401).json({ success: false, message: 'غير مصرح: لا يوجد توكن' });
     }
     try {
@@ -55,6 +55,21 @@ function authMiddleware(req, res, next) {
         console.error('Error verifying token:', error);
         return res.status(401).json({ success: false, message: 'غير مصرح: توكن غير صالح أو منتهي الصلاحية' });
     }
+}
+
+// ===== Middleware التحقق الاختياري من التوكن (للمسارات العامة) =====
+function optionalAuth(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ') && authHeader !== 'Bearer null') {
+        try {
+            const token = authHeader.split(' ')[1];
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            req.user = decoded;
+        } catch (error) {
+            // تجاهل الخطأ في حالة التوكن الاختياري أو المنتهي
+        }
+    }
+    next();
 }
 
 // ===== Middleware التحقق من صلاحيات المدير (Admin) =====
@@ -91,4 +106,4 @@ router.get('/me', authMiddleware, async (req, res) => {
     }
 });
 
-module.exports = { router, authMiddleware, adminMiddleware };
+module.exports = { router, authMiddleware, adminMiddleware, optionalAuth };
