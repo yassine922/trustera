@@ -165,32 +165,3 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 module.exports = router;
-
-        res.status(500).json({ success: false, message: 'خطأ في الحذف', error: error.message });
-    }
-});
-
-// 5. إضافة منتج جديد
-router.post('/', authMiddleware, async (req, res) => {
-    try {
-        const newProduct = await Product.create({
-
-
-            name,
-            price,
-            description,
-            category,
-            image,
-            stock,
-            sellerId: req.user.id, // نضمن دائماً ربط المنتج بصاحب التوكن
-            sellerName: seller.name, // جلب اسم البائع من قاعدة البيانات
-            status: req.user.role === 'admin' ? 'active' : 'pending' // المدير ينشر فوراً، البائع العادي يبقى معلق
-        });
-        res.status(201).json({ success: true, data: newProduct });
-    } catch (error) {
-
-        res.status(500).json({ success: false, message: 'خطأ في الإضافة', error: error.message });
-    }
-});
-
-module.exports = router;

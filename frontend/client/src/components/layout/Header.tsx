@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '../../contexts/AppContext';
 
 // بيانات ثابتة - لا تحتاج AI
@@ -19,22 +19,42 @@ const CATEGORIES = [
   'رياضة',
 ] as const;
 
+// تعريف نوع لجميع معرفات الصفحات المحتملة
+type NavItemIds = (typeof NAV_ITEMS)[number]['id'];
+type DynamicPageIds = 'login' | 'manager-dashboard' | 'seller-dashboard' | 'account' | 'seller-register' | 'categories' | 'cart'; 
+type PageId = NavItemIds | DynamicPageIds;
+
 export default function Header() {
   const { showPage, cartCount, wishCount, showToast, setCurrentCat, user, logout } = useApp();
   const [searchVal, setSearchVal] = useState('');
-  const [activePage, setActivePage] = useState('home');
+  const [activePage, setActivePage] = useState<PageId>('home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
-  const goTo = (page: string) => {
-    showPage(page);
+  const goTo = (page: PageId) => {
+    showPage(page as any);
     setActivePage(page);
     setIsMobileMenuOpen(false);
+    setIsMobileSearchOpen(false);
+
+    // التمرير السلس إلى أعلى الصفحة عند الانتقال
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
+
+  // إغلاق قائمة الموبايل عند تكبير الشاشة لسطح المكتب
+  useEffect(() => {
+    const handleResize = () => { if (window.innerWidth >= 768) setIsMobileMenuOpen(false); };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const performSearch = () => {
     if (!searchVal.trim()) return;
     setCurrentCat('all');
-    showPage('categories');
+    goTo('categories');
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -43,14 +63,14 @@ export default function Header() {
 
   const handleUserClick = () => {
     if (!user) {
-      showPage('login');
+      goTo('login');
       return;
     }
-    const pages: Record<string, string> = {
+    const pages: Record<string, PageId> = {
       admin: 'manager-dashboard',
       seller: 'seller-dashboard',
     };
-    showPage(pages[user.role] || 'account');
+    goTo(pages[user.role] || 'account');
   };
 
   const handleLogout = () => {
@@ -67,120 +87,102 @@ export default function Header() {
   };
 
   return (
-    <header className="fixed top-0 right-0 left-0 z-50 bg-primary-dark shadow-lg">
-      {/* === الشريط العلوي - مخفي في الموبايل === */}
-      <div className="hidden md:flex bg-primary-dark/80 px-4 lg:px-6 py-1.5 items-center justify-between text-xs text-white/80">
-        <div className="flex gap-3 lg:gap-5 items-center">
-          <TopBarButton onClick={() => goTo('home')}>🏠 الرئيسية</TopBarButton>
-          <TopBarButton onClick={() => user?.role === 'seller' ? goTo('seller-dashboard') : goTo('seller-register')}>
-            🏪 بيع على ترسترا
-          </TopBarButton>
-          <TopBarButton onClick={() => showToast('دعم 24/7 متاح', 'info')}>
-            🎧 المساعدة
-          </TopBarButton>
-        </div>
-        <div className="hidden lg:flex gap-3 items-center">
-          <span>🛡️ تسوق آمن</span>
-          <span>🚚 توصيل سريع</span>
-          <span>↩️ إرجاع مجاني</span>
-        </div>
-      </div>
-
+    <header className="fixed top-0 right-0 left-0 z-50 bg-primary-dark/90 backdrop-blur-lg border-b border-white/5 shadow-2xl transition-all duration-300">
       {/* === الشريط الرئيسي === */}
-      <div className="px-3 md:px-4 lg:px-6 py-2 flex items-center gap-2 md:gap-4">
-        {/* زر الموبايل */}
-        <button 
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="md:hidden p-2 text-white text-xl"
-          aria-label="القائمة"
-        >
-          {isMobileMenuOpen ? '✕' : '☰'}
-        </button>
-
-        {/* اللوغو */}
-        <button 
-          onClick={() => goTo('home')} 
-          className="flex items-center gap-1.5 md:gap-2.5 flex-shrink-0 hover:opacity-90 transition"
-        >
-          <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-lg flex items-center justify-center text-lg md:text-xl font-black text-primary-dark">
-            T
+      <div className="relative px-4 md:px-8 lg:px-16 py-4 flex items-center justify-between min-h-[70px]">
+        {isMobileSearchOpen ? (
+          /* وضع البحث النشط في الموبايل */
+          <div className="flex items-center w-full gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex-1 flex items-center bg-white/10 border border-white/20 rounded-full px-4 py-2">
+              <span className="text-accent">🔍</span>
+              <input
+                autoFocus
+                value={searchVal}
+                onChange={e => setSearchVal(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="bg-transparent border-none outline-none px-3 text-sm text-white placeholder-white/60 w-full"
+                placeholder="ما الذي تبحث عنه؟"
+              />
+            </div>
+            <button onClick={() => setIsMobileSearchOpen(false)} className="text-white text-[10px] font-bold uppercase tracking-widest px-1">إلغاء</button>
           </div>
-          <span className="text-lg md:text-2xl font-black text-white tracking-tight hidden sm:block">
-            Trustera
-          </span>
-        </button>
-
-        {/* شريط البحث - متجاوب */}
-        <div className="flex-1 flex items-center bg-white rounded-lg overflow-hidden max-w-2xl shadow-sm mx-1 md:mx-0">
-          <select className="hidden sm:block px-2 md:px-3 h-9 md:h-11 border-l border-gray-200 bg-gray-50 text-xs md:text-sm font-semibold focus:outline-none cursor-pointer">
-            {CATEGORIES.map(cat => (
-              <option key={cat}>{cat}</option>
-            ))}
-          </select>
-          <input
-            value={searchVal}
-            onChange={e => setSearchVal(e.target.value)}
-            onKeyDown={handleKeyDown}
-            className="flex-1 h-9 md:h-11 border-0 outline-none px-2 md:px-3.5 text-xs md:text-sm min-w-0"
-            placeholder="ابحث عن منتج..."
-          />
-          <button 
-            onClick={performSearch} 
-            className="w-9 md:w-12 h-9 md:h-11 bg-accent flex items-center justify-center text-white hover:bg-orange-600 transition flex-shrink-0"
-          >
-            <span className="text-sm md:text-lg">🔍</span>
-          </button>
-        </div>
-
-        {/* أزرار العمليات - مُبسّطة للموبايل */}
-        <div className="flex items-center gap-0.5 md:gap-1.5 flex-shrink-0">
-          <IconButton 
-            onClick={() => goTo('wishlist')} 
-            count={wishCount}
-            icon="❤️"
-            label="المفضلة"
-            showLabel={false}
-          />
-          <IconButton 
-            onClick={() => goTo('cart')} 
-            count={cartCount}
-            icon="🛒"
-            label="السلة"
-            showLabel={false}
-          />
-          
-          {/* زر المستخدم - نسخة مُختصرة للموبايل */}
-          {user ? (
-            <div className="flex items-center gap-1 md:gap-1.5">
+        ) : (
+          <>
+            {/* القسم الأيسر: القائمة والبحث (Desktop) */}
+            <div className="flex items-center gap-2 md:gap-6 flex-1">
               <button 
-                onClick={handleUserClick} 
-                className="flex items-center gap-1 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 bg-white/10 rounded-lg text-white hover:bg-white/20 transition"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="md:hidden p-2 text-white hover:bg-white/10 rounded-full transition-colors"
+                aria-label="القائمة"
               >
-                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-accent flex items-center justify-center text-xs md:text-sm font-bold">
-                  {user.name?.charAt(0) || 'م'}
-                </div>
-                <div className="hidden md:block text-xs leading-tight text-left">
-                  <div className="font-bold text-sm truncate max-w-[80px]">{user.name}</div>
-                  <div className="text-white/70 text-xs">{getRoleLabel(user.role)}</div>
-                </div>
+                {isMobileMenuOpen ? '✕' : '☰'}
               </button>
-              <button 
-                onClick={handleLogout} 
-                className="hidden sm:block px-2 py-1.5 bg-red-500/20 text-white rounded-lg text-xs font-bold hover:bg-red-500/40 transition"
-              >
-                خروج
+
+              {/* شريط بحث هادئ (Desktop) */}
+              <div className="hidden lg:flex items-center bg-white/5 border border-white/10 rounded-full px-4 py-2 w-64 focus-within:w-80 focus-within:bg-white/10 transition-all group">
+                <span className="text-white/40 group-focus-within:text-accent transition-colors font-bold">🔍</span>
+                <input
+                  value={searchVal}
+                  onChange={e => setSearchVal(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="bg-transparent border-none outline-none px-3 text-xs text-white placeholder-white/30 flex-1"
+                  placeholder="بحث عن منتجات..."
+                />
+              </div>
+              
+              {/* أيقونة البحث للموبايل */}
+              <button onClick={() => setIsMobileSearchOpen(true)} className="lg:hidden p-2 text-white/80">
+                🔍
               </button>
             </div>
-          ) : (
+
+            {/* اللوغو المركزي */}
             <button 
-              onClick={() => showPage('login')} 
-              className="px-2 md:px-4 py-1.5 md:py-2 bg-white text-primary-dark rounded-lg text-xs md:text-sm font-bold hover:bg-gray-100 transition whitespace-nowrap"
+              onClick={() => goTo('home')} 
+              className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-0.5 group"
             >
-              <span className="sm:hidden">🔑</span>
-              <span className="hidden sm:inline">دخول / تسجيل</span>
+              <span className="text-xl md:text-3xl font-light text-white tracking-[0.2em] md:tracking-[0.3em] uppercase transition-all group-hover:text-accent">
+                Trustera
+              </span>
+              <span className="w-6 h-[1px] bg-accent/50 group-hover:w-12 transition-all duration-700"></span>
             </button>
-          )}
-        </div>
+
+            {/* القسم الأيمن: أيقونات العمليات */}
+            <div className="flex items-center gap-1 md:gap-5 flex-1 justify-end">
+              <IconButton 
+                onClick={() => goTo('wishlist')} 
+                count={wishCount}
+                icon="❤️"
+                label="المفضلة"
+                showLabel={false}
+              />
+              <IconButton 
+                onClick={() => goTo('cart')} 
+                count={cartCount}
+                icon="🛒"
+                label="السلة"
+                showLabel={false}
+              />
+              
+              {user ? (
+                <button onClick={handleUserClick} className="p-1">
+                  <div className="w-8 h-8 rounded-full border border-accent/30 p-0.5 group-hover:border-accent transition-colors">
+                    <div className="w-full h-full rounded-full bg-accent flex items-center justify-center text-[10px] font-black text-white">
+                      {user.name?.charAt(0) || 'U'}
+                    </div>
+                  </div>
+                </button>
+              ) : (
+                <button 
+                  onClick={() => goTo('login')} 
+                  className="ml-2 md:px-5 py-2 bg-accent text-white rounded-full text-[10px] md:text-xs font-black tracking-widest uppercase hover:bg-white hover:text-primary-dark transition-all"
+                >
+                  Login
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {/* === شريط التنقل - سطح المكتب === */}
@@ -214,8 +216,8 @@ export default function Header() {
 
       {/* === قائمة الموبايل === */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-primary-dark border-t border-white/10">
-          <div className="p-3 space-y-1">
+        <div className="md:hidden bg-primary-dark border-t border-white/10 animate-in slide-in-from-right duration-300 max-h-[80vh] overflow-y-auto">
+          <div className="p-4 space-y-2">
             {NAV_ITEMS.map((item) => (
               <button
                 key={item.id}
@@ -233,7 +235,7 @@ export default function Header() {
             {user?.role === 'seller' && (
               <button
                 onClick={() => goTo('seller-dashboard')}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-accent hover:bg-orange-500/15 transition"
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-semibold text-accent hover:bg-white/10 transition border border-accent/20"
               >
                 <span>🏪</span> لوحة البائع
               </button>
@@ -255,17 +257,6 @@ export default function Header() {
 
 // === مكونات مساعدة ===
 
-function TopBarButton({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
-  return (
-    <button 
-      onClick={onClick} 
-      className="text-white/80 hover:text-white transition text-xs"
-    >
-      {children}
-    </button>
-  );
-}
-
 function IconButton({ 
   onClick, 
   icon, 
@@ -282,7 +273,7 @@ function IconButton({
   return (
     <button 
       onClick={onClick} 
-      className="flex flex-col items-center gap-0.5 px-1.5 md:px-2.5 py-1 md:py-1.5 text-white/85 rounded-lg relative hover:bg-white/10 transition min-w-[44px] touch-manipulation"
+      className="flex flex-col items-center gap-0.5 px-2 py-1.5 text-white/85 rounded-lg relative hover:bg-white/10 transition min-w-[40px] touch-manipulation active:scale-95"
       aria-label={label}
     >
       <span className="text-base md:text-lg">{icon}</span>

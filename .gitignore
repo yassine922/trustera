@@ -1,12 +1,16 @@
+# Dependencies
 node_modules/
-.env
+.pnpm-store/
+
+# Build output
 dist/
 build/
+.vite/
+
+# Environment variables (CRITICAL)
+.env
+.env.local
+
+# OS files
 .DS_Store
-
-# Backend specific
-package-lock.json
-npm-debug.log
-
-# Frontend specific
-client/node_modules/
+Thumbs.db

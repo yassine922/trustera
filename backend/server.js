@@ -80,37 +80,16 @@ app.use((err, req, res, next) => {
     });
 });
 
-// الاتصال بقاعدة البيانات والتشغيل
+// إعداد المنافذ والاتصال بقاعدة البيانات
 const PORT = process.env.PORT || 5000;
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
-        console.log('✅ MongoDB متصل');
+        console.log('✅ MongoDB متصل بنجاح');
         server.listen(PORT, () => {
             console.log(`🚀 الخادم يعمل على المنفذ ${PORT}`);
         });
     })
     .catch(err => {
         console.error('❌ فشل الاتصال بـ MongoDB:', err);
-        // يمكنك هنا إنهاء العملية إذا فشل الاتصال بقاعدة البيانات بشكل حرج
-        process.exit(1); 
-    });
-
-
-app.use('/api/notifications', notificationRoutes); // تم التحديث
-app.use('/api/reviews', reviewRoutes); // تم التحديث
-// يمكنك إضافة مسارات أخرى هنا مثل points, payments إذا كانت موجودة
-
-// الاتصال بقاعدة البيانات والتشغيل
-const PORT = process.env.PORT || 5000;
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => {
-        server.listen(PORT, () => {
-            console.log(`🚀 الخادم يعمل على المنفذ ${PORT}`);
-        });
-    })
-
-    .catch(err => {
-        console.error('❌ فشل الاتصال بـ MongoDB:', err);
-        // يمكنك هنا إنهاء العملية إذا فشل الاتصال بقاعدة البيانات بشكل حرج
-        process.exit(1); 
+        process.exit(1);
     });
