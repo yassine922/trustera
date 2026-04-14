@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 // تأكد من أن هذه الملفات موجودة في المجلدات المشار إليها
 const Order = require('../Order'); // تصحيح المسار للرجوع للمجلد الرئيسي
 const Product = require('../products/Product'); // تصحيح المسار للوصول لمجلد المنتجات
-const Notification = require('../models/Notification');
+const Notification = require('../models/Notification'); // تأكد أن المجلد اسمه models بالصغير
 
 const { authMiddleware, adminMiddleware } = require('../auth'); // تم التحديث
 

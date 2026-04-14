@@ -5,12 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ترسترا | تسوق بثقة، بيع بسهولة</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#22c55e" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css" />
+  <style>
+    #pwa-install-banner { display: none; position: fixed; bottom: 20px; left: 20px; right: 20px; background: #22c55e; color: white; padding: 15px; border-radius: 12px; z-index: 9999; box-shadow: 0 10px 25px rgba(0,0,0,0.1); font-family: 'Cairo', sans-serif; align-items: center; justify-content: space-between; }
+    #pwa-install-banner button { background: white; color: #22c55e; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+  </style>
 </head>
 <body>
   <div id="root"></div>
+  
+  <!-- بنر التثبيت المخصص -->
+  <div id="pwa-install-banner">
+    <span>قم بتثبيت تطبيق ترسترا للوصول أسرع!</span>
+    <button id="install-btn">تثبيت الآن</button>
+  </div>
+
+  <script>
+    let deferredPrompt;
+    const installBanner = document.getElementById('pwa-install-banner');
+    const installBtn = document.getElementById('install-btn');
+
+    // تسجيل الـ Service Worker (ضروري جداً لظهور زر التثبيت)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(() => console.log('Service Worker Registered'));
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      console.log('✅ تطبيق ترسترا جاهز للتثبيت');
+      // إظهار البنر فوراً عند استيفاء شروط PWA
+      installBanner.style.display = 'flex';
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          installBanner.style.display = 'none';
+        }
+        deferredPrompt = null;
+      }
+    });
+  </script>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>
