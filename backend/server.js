@@ -16,8 +16,8 @@ const reviewRoutes = require('./reviews'); // تصحيح المسار ليشير
 require('./auth/User'); // تصحيح المسار لتسجيل الموديل
 require('./products/Product');
 require('./Review');
-require('./Order'); // تصحيح المسار: الملف موجود في المجلد الرئيسي backend
-require('./models/Notification'); 
+require('./Order'); // يشير إلى backend/Order.js
+require('./models/Notification');
 
 
 const app = express();

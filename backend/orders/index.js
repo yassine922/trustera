@@ -3,9 +3,9 @@ const router = express.Router();
 const mongoose = require('mongoose');
 
 // تأكد من أن هذه الملفات موجودة في المجلدات المشار إليها
-const Order = require('../Order'); // تصحيح المسار للرجوع للمجلد الرئيسي
+const Order = require('../Order'); // يشير إلى backend/Order.js
 const Product = require('../products/Product'); // تصحيح المسار للوصول لمجلد المنتجات
-const Notification = require('../models/Notification'); // تأكد أن المجلد اسمه models بالصغير
+const Notification = require('../models/Notification'); 
 
 const { authMiddleware, adminMiddleware } = require('../auth'); // تم التحديث
 
