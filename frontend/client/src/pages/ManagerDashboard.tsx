@@ -82,7 +82,7 @@ function BarChart() {
 function ProgressRow({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div className="mb-4">
-      <div className="flex justify-between text-xs font-bold mb-1.5">
+      <div className="flex justify-between text-[11px] font-black mb-1.5">
         <span className="text-gray-500">{label}</span>
         <span className="text-gray-900">{value}%</span>
       </div>
@@ -120,7 +120,7 @@ function MarketOverlay({
     <div className="absolute inset-0 bg-gray-50 z-20 rounded-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
       {/* Header */}
       <div className="bg-white border-b border-gray-100 px-5 py-3.5 flex items-center gap-3">
-        <button onClick={onClose} className="px-4 py-1.5 bg-green-50 text-primary rounded-lg text-xs font-black hover:bg-green-100 transition-colors">← رجوع</button>
+        <button onClick={onClose} className="px-4 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-black hover:bg-green-100 transition-colors">← رجوع</button>
         <span className="text-sm font-black text-gray-800 flex-1">السوق — عرض المدير</span>
         <span className="text-[10px] bg-amber-50 text-amber-600 px-3 py-1 rounded-full font-black uppercase">وضع المراقبة</span>
       </div>
@@ -284,7 +284,7 @@ export default function ManagerDashboard() {
 
         {/* دخول السوق */}
         <div className="px-5 pb-4">
-          <button onClick={() => { setMarketCat('الكل'); setMarketOpen(true); }} className="w-full py-3 bg-primary text-white rounded-xl text-xs font-black shadow-lg shadow-green-100 transition-all hover:bg-primary-dark flex items-center justify-center gap-2">
+          <button onClick={() => { setMarketCat('الكل'); setMarketOpen(true); }} className="w-full py-3 bg-amber-500 text-white rounded-xl text-xs font-black shadow-lg shadow-amber-500/30 transition-all hover:bg-amber-600 flex items-center justify-center gap-2">
             🏪 دخول السوق
           </button>
         </div>

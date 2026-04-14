@@ -19,10 +19,12 @@ router.get('/my-products', authMiddleware, async (req, res) => {
 // 6. البحث المتقدم (Advanced Search)
 router.get('/search', optionalAuth, async (req, res) => {
     try {
-        const { q, minPrice, maxPrice, minRating, category, status } = req.query;
+        const { q, minPrice, maxPrice, minRating, category, status, page = 1, limit = 12 } = req.query;
         const isAdmin = req.user && req.user.role === 'admin'; // ملاحظة: هذا يتطلب وجود middleware قبل المسار لفك التوكن
         
+        const skip = (parseInt(page) - 1) * parseInt(limit);
         let query = {};
+
         // إذا لم يكن مديراً، يرى المنتجات النشطة فقط دائماً
         // إذا كان مديراً، يمكنه الفلترة حسب الحالة المرسلة أو رؤية الكل
         query.status = isAdmin ? (status || { $exists: true }) : 'active';
@@ -49,8 +51,18 @@ router.get('/search', optionalAuth, async (req, res) => {
             query.category = category;
         }
 
-        const products = await Product.find(query).sort({ createdAt: -1 });
-        res.json({ success: true, count: products.length, data: products });
+        const total = await Product.countDocuments(query);
+        const products = await Product.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        res.json({ 
+            success: true, 
+            count: total, 
+            data: products,
+            pagination: { total, page: parseInt(page), pages: Math.ceil(total / limit) }
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: 'خطأ في عملية البحث', error: error.message });
     }

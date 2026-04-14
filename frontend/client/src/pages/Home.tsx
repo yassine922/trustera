@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import ProductCard from '../components/shared/ProductCard';
+import ProductCard from './ProductCard'; // التأكد من المسار الصحيح في نفس المجلد
 import { useApp } from '../contexts/AppContext';
 
 // ✅ إضافة: منتجات حقيقية مع SKU
@@ -102,7 +102,7 @@ async function fetchProductsFromAPI() {
     const response = await fetch('/api/products');
     if (response.ok) {
       const data = await response.json();
-      return data.map((p: any) => ({ ...p, isReal: true }));
+      return data.success ? data.data.map((p: any) => ({ ...p, id: p._id, isReal: true })) : null;
     }
   } catch (e) {
     console.log('API غير متاح، استخدام البيانات المحلية');
@@ -164,57 +164,57 @@ export default function Home() {
   }
 
   return (
-    <div>
+    <div className="pb-24 md:pb-0">
       {/* Hero Banner */}
-      <div className="bg-gradient-to-r from-primary-dark via-primary to-primary-light px-8 py-10 text-white relative overflow-hidden min-h-56 flex items-center">
+      <div className="bg-gradient-to-r from-green-950 via-green-900 to-green-800 px-8 py-12 text-white relative overflow-hidden min-h-[400px] flex items-center rounded-b-[40px] md:rounded-b-[60px] shadow-2xl">
         <div className="absolute top-0 left-0 w-72 h-72 rounded-full bg-white/5 -translate-y-1/3 -translate-x-1/3" />
-        <div className="absolute bottom-0 right-0 w-64 h-64 rounded-full bg-white/4 translate-y-1/3 translate-x-1/4" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-amber-500/5 translate-y-1/3 translate-x-1/4 blur-3xl" />
         
         <div className="flex-1 relative z-10">
-          <div className="inline-flex items-center gap-1.5 bg-white/15 rounded-full px-3 py-1 text-xs font-semibold mb-3.5">
+          <div className="inline-flex items-center gap-1.5 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full px-4 py-1.5 text-xs font-black mb-5 uppercase tracking-widest animate-pulse">
             🎉 منصة التسوق الأولى في الجزائر
           </div>
-          <h1 className="text-4xl font-black leading-tight mb-2.5">
-            تسوّق بثقة،<br /><span className="text-green-300">بيع بسهولة</span>
+          <h1 className="text-4xl md:text-6xl font-black leading-tight mb-6">
+            تسوّق بثقة،<br /><span className="text-amber-400 underline decoration-amber-500/30 decoration-8 underline-offset-12">بيع بسهولة</span>
           </h1>
-          <p className="text-sm text-white/80 mb-5.5 max-w-96">
+          <p className="text-base text-white/70 mb-8 max-w-lg font-medium leading-relaxed">
             اكتشف آلاف المنتجات من بائعين موثوقين في الجزائر. جودة مضمونة وتوصيل سريع.
           </p>
           <div className="flex gap-3">
             <button 
               onClick={() => showPage('categories')} 
-              className="px-7 py-2.75 bg-white text-primary-dark border-0 rounded-lg font-cairo text-sm font-black cursor-pointer transition-all hover:shadow-lg"
+              className="px-8 py-3.5 bg-amber-500 text-green-950 border-0 rounded-xl font-cairo text-sm font-black cursor-pointer transition-all hover:scale-105 shadow-xl shadow-amber-500/20"
             >
               🛍️ تسوق الآن
             </button>
             <button 
               onClick={() => showPage('seller-register')} 
-              className="px-7 py-2.75 bg-white/15 text-white border-2 border-white/35 rounded-lg font-cairo text-sm font-bold cursor-pointer hover:bg-white/25 transition"
+              className="px-8 py-3.5 bg-white/10 text-white border-2 border-white/20 rounded-xl font-cairo text-sm font-black cursor-pointer hover:bg-white/20 transition backdrop-blur-md"
             >
               🏪 ابدأ البيع
             </button>
           </div>
         </div>
 
-        <div className="w-96 flex-shrink-0 relative z-10 flex items-center justify-center">
-          <div className="w-52 h-52 rounded-full bg-white/10 border-4 border-white/20 flex items-center justify-center text-9xl animate-bounce">
+        <div className="hidden lg:flex w-96 flex-shrink-0 relative z-10 items-center justify-center">
+          <div className="w-64 h-64 rounded-[40px] bg-gradient-to-br from-amber-400 to-amber-600 border-8 border-white/10 flex items-center justify-center text-[150px] animate-bounce shadow-2xl rotate-6">
             🛍️
           </div>
         </div>
 
         {/* Trust badges */}
-        <div className="absolute bottom-0 left-0 right-0 flex bg-black/20 border-t border-white/10">
+        <div className="absolute bottom-0 left-0 right-0 hidden md:flex bg-black/30 backdrop-blur-xl border-t border-white/10">
           {[
             { icon: '🛡️', title: 'تسوق آمن 100%', sub: 'حماية كاملة لبياناتك' },
             { icon: '🚚', title: 'توصيل سريع', sub: 'خلال 2-4 أيام عمل' },
             { icon: '↩️', title: 'إرجاع مجاني', sub: 'خلال 14 يوم' },
             { icon: '🏆', title: 'ضمان الجودة', sub: 'منتجات موثوقة 100%' },
           ].map((b, i) => (
-            <div key={i} className="flex-1 flex items-center gap-2.5 px-5 py-3 border-l border-white/10 first:border-l-0 text-white/85 text-xs">
-              <span className="text-base">{b.icon}</span>
+            <div key={i} className="flex-1 flex items-center gap-3 px-6 py-4 border-l border-white/10 first:border-l-0 text-white text-[10px] font-black uppercase tracking-tighter">
+              <span className="text-xl">{b.icon}</span>
               <div>
                 <div className="font-bold">{b.title}</div>
-                <div className="opacity-70">{b.sub}</div>
+                <div className="opacity-50">{b.sub}</div>
               </div>
             </div>
           ))}
@@ -224,57 +224,91 @@ export default function Home() {
       {/* قسم المنتجات الرائجة */}
       <div className="px-6 pt-6">
         <div className="flex items-center justify-between mb-4">
-          <div className="text-lg font-black flex items-center gap-2">
+          <div className="text-xl font-black flex items-center gap-2 text-green-950">
             🔥 المنتجات الرائجة
           </div>
           <button 
             onClick={() => showPage('categories')} 
-            className="text-sm text-primary font-semibold cursor-pointer flex items-center gap-1 hover:underline"
+            className="text-xs text-amber-600 font-black cursor-pointer flex items-center gap-1 hover:underline uppercase tracking-widest"
           >
-            عرض الكل ◀
+            View All ◀
           </button>
         </div>
         <div className="grid grid-cols-auto-fill gap-3.5">
           {featured.map((p, i) => (
-            <ProductCard key={p.id} product={p} idx={i} />
+            <ProductCard key={p.id || (p as any)._id || i} product={p} idx={i} />
           ))}
         </div>
       </div>
 
       {/* بانر العروض */}
-      <div className="mx-6 mt-6 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg p-7 flex items-center gap-4 text-white">
-        <span className="text-6xl">⚡</span>
+      <div className="mx-6 mt-8 bg-gradient-to-br from-green-900 to-green-950 rounded-[32px] p-8 flex flex-col md:flex-row items-center gap-8 text-white relative overflow-hidden shadow-2xl border border-white/5">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl -mr-32 -mt-32"></div>
+        <span className="text-7xl animate-pulse">⚡</span>
         <div className="flex-1">
-          <div className="text-2xl font-black mb-1">عروض اليوم الحصرية</div>
-          <div className="text-sm text-white/80">تنتهي خلال:</div>
-          <div className="mt-2"><Countdown /></div>
+          <div className="text-3xl font-black mb-2 text-amber-400 uppercase tracking-tighter">عروض الصفقات الذهبية</div>
+          <div className="text-sm text-white/60 font-bold mb-4">تنتهي العروض الحصرية في:</div>
+          <Countdown />
         </div>
         <button 
           onClick={() => showPage('categories')} 
-          className="px-6 py-2.5 bg-white text-indigo-600 border-0 rounded-lg font-cairo text-sm font-black cursor-pointer hover:shadow-lg transition whitespace-nowrap"
+          className="px-10 py-4 bg-amber-500 text-green-950 border-0 rounded-2xl font-cairo text-sm font-black cursor-pointer hover:bg-amber-400 hover:scale-105 transition shadow-xl shadow-amber-500/20 whitespace-nowrap"
         >
           🏷️ تصفح العروض
         </button>
       </div>
 
       {/* المنتجات الجديدة */}
-      <div className="px-6 py-8">
+      <div className="px-6 py-12">
         <div className="flex items-center justify-between mb-4">
-          <div className="text-lg font-black flex items-center gap-2">
-            <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full font-bold">NEW</span>
-            منتجات جديدة
+          <div className="text-xl font-black flex items-center gap-2 text-green-950">
+            <span className="bg-amber-500 text-green-950 text-[10px] px-3 py-1 rounded-lg font-black tracking-[0.2em] uppercase">New</span>
+            وصل حديثاً
           </div>
           <button 
             onClick={() => showPage('categories')} 
-            className="text-sm text-primary font-semibold cursor-pointer hover:underline"
+            className="text-xs text-amber-600 font-black cursor-pointer hover:underline uppercase tracking-widest"
           >
-            عرض الكل ◀
+            View All ◀
           </button>
         </div>
         <div className="grid grid-cols-auto-fill gap-3.5">
           {newest.map((p, i) => (
-            <ProductCard key={p.id} product={p} idx={i} />
+            <ProductCard key={p.id || (p as any)._id || i} product={p} idx={i} />
           ))}
+        </div>
+      </div>
+
+      {/* قسم تطبيق الجوال (App Promotion) */}
+      <div className="mx-6 my-10 bg-green-900 rounded-3xl p-8 relative overflow-hidden flex flex-col md:flex-row items-center gap-8 shadow-2xl">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+        
+        <div className="flex-1 relative z-10 text-center md:text-right">
+          <div className="text-amber-400 font-black text-sm mb-2">تجربة تسوق أسرع ⚡</div>
+          <h2 className="text-2xl md:text-4xl font-black text-white mb-4">حمل تطبيق ترسترا الآن</h2>
+          <p className="text-white/70 text-sm mb-6 max-w-lg mx-auto md:mr-0">
+            احصل على تنبيهات فورية للطلبات، عروض حصرية، وتجربة تصفح سلسة وموفرة للبيانات.
+          </p>
+          <div className="flex flex-wrap justify-center md:justify-start gap-4">
+            <button className="flex items-center gap-3 bg-black text-white px-6 py-2.5 rounded-xl border border-white/20 hover:bg-gray-900 transition-all">
+              <span className="text-2xl">🤖</span>
+              <div className="text-right">
+                <div className="text-[10px] opacity-60">Get it on</div>
+                <div className="text-xs font-bold">Google Play</div>
+              </div>
+            </button>
+            <button className="flex items-center gap-3 bg-black text-white px-6 py-2.5 rounded-xl border border-white/20 hover:bg-gray-900 transition-all">
+              <span className="text-2xl">🍎</span>
+              <div className="text-right">
+                <div className="text-[10px] opacity-60">Download on</div>
+                <div className="text-xs font-bold">App Store</div>
+              </div>
+            </button>
+          </div>
+        </div>
+        
+        <div className="w-48 h-48 md:w-64 md:h-64 bg-white/5 rounded-full flex items-center justify-center text-8xl md:text-9xl relative z-10 border border-white/10 animate-pulse">
+          📱
         </div>
       </div>
 

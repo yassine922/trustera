@@ -11,7 +11,7 @@ const pointSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
-const Point = mongoose.model('Point', pointSchema);
+const Point = mongoose.models.Point || mongoose.model('Point', pointSchema);
 
 // جلب النقاط
 router.get('/', async (req, res) => {

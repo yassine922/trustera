@@ -12,8 +12,23 @@ const { authMiddleware, adminMiddleware } = require('../auth'); // تم التح
 // جلب جميع الطلبات (للمدير فقط)
 router.get('/', authMiddleware, adminMiddleware, async (req, res) => {
     try {
-        const orders = await Order.find().populate('buyerId', 'name email').populate('items.productId', 'name price');
-        res.json({ success: true, data: orders });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const total = await Order.countDocuments();
+        const orders = await Order.find()
+            .populate('buyerId', 'name email')
+            .populate('items.productId', 'name price')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        res.json({ 
+            success: true, 
+            data: orders,
+            pagination: { total, page, pages: Math.ceil(total / limit) }
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: 'خطأ في جلب الطلبات', error: error.message });
     }
@@ -49,6 +64,17 @@ router.post('/', authMiddleware, async (req, res) => {
         const { items, totalAmount, shippingAddress } = req.body;
         if (!items || items.length === 0) return res.status(400).json({ success:false, message: 'السلة فارغة' });
         
+        // التحقق من توفر المخزون لجميع المنتجات قبل البدء في الخصم
+        for (const item of items) {
+            const product = await Product.findById(item.productId);
+            if (!product || product.stock < Math.abs(item.qty || 1)) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `المنتج "${product?.name || 'غير معروف'}" غير متوفر بالكمية المطلوبة` 
+                });
+            }
+        }
+
         // 1. إنشاء الطلب الفعلي في قاعدة البيانات
         const order = await Order.create({
             buyerId: req.user.id,
