@@ -6,9 +6,7 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js",
-    "build": "pnpm --filter trustera-frontend build",
-    "install-all": "pnpm install && pnpm install --prefix frontend/client",
-    "postinstall": "pnpm install --prefix frontend/client",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' pnpm recursive run build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint backend/"
   },

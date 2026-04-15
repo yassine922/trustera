@@ -3,7 +3,7 @@ services:
     name: trustera-backend
     env: node
     plan: free
-    buildCommand: pnpm install && pnpm run build
+    buildCommand: pnpm run build
     startCommand: node backend/server.js
     envVars:
       - key: NODE_ENV
@@ -16,3 +16,5 @@ services:
         sync: false
       - key: FRONTEND_URL
         sync: false
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=4096
