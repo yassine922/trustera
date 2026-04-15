@@ -81,7 +81,7 @@ export default function ProductPage() {
 
   const p = product;
   // const seller = getSellerById(p.sellerId); // يجب جلب معلومات البائع من API
-  const inWish = wishlist.some(w => (w._id || w.id) === p._id); // Point: ID Consistency
+  const inWish = wishlist.some(w => (w._id || w.id) === (p._id || p.id)); // Point: ID Consistency
 
   const bgClasses: Record<string, string> = {
     'gradient-1': 'from-blue-50 to-blue-200',

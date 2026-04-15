@@ -1,24 +1,22 @@
 # Dependencies
 node_modules/
-frontend/client/node_modules/
+.pnpm-debug.log*
 
-# Production build
+# Build outputs
 dist/
-frontend/client/dist/
-build/
+frontend/dist/
 
 # Environment variables
 .env
+.env.local
+.env.production
 
-# Logs
-*.log
-error.log
-npm-debug.log*
-
-# Editor folders
+# IDE and System files
 .vscode/
 .idea/
-
-# OS metadata
 .DS_Store
-Thumbs.db
+thumbs.db
+
+# Vercel and Logs
+.vercel/
+*.log

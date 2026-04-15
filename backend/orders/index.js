@@ -31,7 +31,7 @@ router.get('/', authMiddleware, adminMiddleware, async (req, res) => {
                         as: 'buyer'
                     }
                 },
-                { $unwind: '$buyer' },
+                { $unwind: { path: '$buyer', preserveNullAndEmptyArrays: true } },
                 { $project: { 'buyer.password': 0 } }
             ]),
             Order.countDocuments()
