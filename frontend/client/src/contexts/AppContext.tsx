@@ -10,15 +10,23 @@ interface AppContextType {
   wishlist: any[];
   cartCount: number;
   wishCount: number;
+  cartTotal: number;
   toast: { msg: string; type: string; icon?: string } | null;
   showToast: (msg: string, type?: 'success' | 'error' | 'warning' | 'info', icon?: string) => void;
   login: (userData: any, token: string) => void;
   logout: () => void;
   addToCart: (product: any) => void;
   removeFromCart: (productId: string) => void;
+  updateQty: (productId: string, qty: number) => void;
+  clearCart: () => void;
+  setCart: React.Dispatch<React.SetStateAction<any[]>>;
   toggleWish: (product: any) => void;
   setCurrentCat: (cat: string) => void;
   currentCat: string;
+  currentProduct: any | null;
+  setCurrentProduct: (product: any) => void;
+  currentPage: string;
+  showPage: (page: string) => void;
   placeOrder: (orderData: any) => Promise<boolean>;
 }
 
@@ -31,6 +39,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [wishlist, setWishlist] = useState<any[]>(JSON.parse(localStorage.getItem('wishlist') || '[]'));
   const [toast, setToast] = useState<any>(null);
   const [currentCat, setCurrentCat] = useState('all');
+  const [currentProduct, setCurrentProduct] = useState<any | null>(null);
+  const [currentPage, setCurrentPage] = useState('home');
 
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cart));
@@ -43,6 +53,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const showToast = (msg: string, type: any = 'success', icon?: string) => {
     setToast({ msg, type, icon });
     setTimeout(() => setToast(null), 3000);
+  };
+
+  const showPage = (page: string) => {
+    setCurrentPage(page);
   };
 
   const login = (userData: any, userToken: string) => {
@@ -71,7 +85,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const removeFromCart = (productId: string) => {
-    setCart(prev => prev.filter(item => item._id !== productId));
+    setCart(prev => prev.filter(item => item._id !== productId && item.id !== productId));
+  };
+
+  const updateQty = (productId: string, qty: number) => {
+    if (qty <= 0) {
+      removeFromCart(productId);
+      return;
+    }
+    setCart(prev =>
+      prev.map(item =>
+        (item._id === productId || item.id === productId) ? { ...item, qty } : item
+      )
+    );
+  };
+
+  const clearCart = () => {
+    setCart([]);
   };
 
   const toggleWish = (product: any) => {
@@ -87,6 +117,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  const cartTotal = cart.reduce((acc, item) => acc + (Number(item.price) * (item.qty || 1)), 0);
+
   const placeOrder = async (orderData: any): Promise<boolean> => {
     if (!token) {
       showToast('يرجى تسجيل الدخول أولاً', 'error');
@@ -100,7 +132,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           price: Number(item.price),
           sellerId: item.sellerId
         })),
-        totalAmount: cart.reduce((acc, curr) => acc + (curr.price * curr.qty), 0) + 400,
+        totalAmount: cartTotal + 400,
         shippingAddress: orderData.address
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -123,9 +155,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       user, token, cart, wishlist,
       cartCount: cart.length,
       wishCount: wishlist.length,
+      cartTotal,
       toast, showToast, login, logout,
-      addToCart, removeFromCart, toggleWish,
-      setCurrentCat, currentCat, placeOrder
+      addToCart, removeFromCart, updateQty, clearCart, setCart,
+      toggleWish,
+      setCurrentCat, currentCat,
+      currentProduct, setCurrentProduct,
+      currentPage, showPage,
+      placeOrder
     }}>
       {children}
     </AppContext.Provider>
