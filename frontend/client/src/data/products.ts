@@ -5,6 +5,7 @@ export interface Product {
   stock: number; isNew: boolean; isFeatured: boolean; isFast: boolean;
   emoji: string; colors: string[]; sizes: string[];
   desc: string; bg: string; sold: number;
+  sku?: string; category?: string; _id?: string;
 }
 export interface Seller {
   id: number; name: string; av: string; avColor: string;

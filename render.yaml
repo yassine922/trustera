@@ -3,7 +3,7 @@ services:
     name: trustera-backend
     env: node
     plan: free
-    buildCommand: pnpm install
+    buildCommand: pnpm install && pnpm run build
     startCommand: node backend/server.js
     envVars:
       - key: NODE_ENV

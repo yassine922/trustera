@@ -147,7 +147,7 @@ export default function Categories() {
           {products.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3.5">
               {products.map((p) => (
-                <div key={p.id} onClick={() => setLocation(`/product/${p._id || p.id}`)} className="bg-white rounded-2xl border border-gray-100 overflow-hidden cursor-pointer transition-all hover:shadow-md hover:-translate-y-1">
+                <div key={p.id} onClick={() => setLocation(`/product/${(p as any)._id || p.id}`)} className="bg-white rounded-2xl border border-gray-100 overflow-hidden cursor-pointer transition-all hover:shadow-md hover:-translate-y-1">
                   <div className="h-40 bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center text-5xl">
                     {p.emoji}
                   </div>

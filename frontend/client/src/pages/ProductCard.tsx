@@ -1,6 +1,6 @@
-import { useApp } from '../../contexts/AppContext';
+import { useApp } from '../contexts/AppContext';
 import { useLocation } from 'wouter';
-import { formatPrice } from '../../data/products';
+import { formatPrice } from '../data/products';
 
 interface ProductCardProps {
   product: any;
